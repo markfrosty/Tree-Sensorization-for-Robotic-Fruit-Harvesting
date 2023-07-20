@@ -1,18 +1,18 @@
 //Mark Frost, Oregon State University Intelligent Machines and Materials Lab, Summer 2023
 //Part of The Tree Sensorization Data Collection Suite
-//IMU Data Collection and BLE Transmission Node
+//IMU Data Receiving Node
 //Inspired by https://github.com/little-scale/arduino-sketches/blob/master/BLE_IMU.ino
 //Derived from examples/ArduinoBLE/Central/LedControl
-//Version 1 July 14, 2023
+//Version 2 July 20, 2023
 //Central Device: Arduino Nano RP2040 Connect
 //Peripheral Device: Arduino Nano 33 BLE
 //IMU: LSM9DS1
 //    DataSheet: https://www.st.com/resource/en/datasheet/lsm9ds1.pdf
 //    Standard Specification Cheat Sheet:
-//      Accelerometer range is set at ±4 g with a resolution of 0.122 mg.
+//      Accelerometer range is set at ±4 g with a resolution of 0.122 mg. -> converted to m/s^2 on peripheral
 //      Gyroscope range is set at ±2000 dps with a resolution of 70 mdps.
 //      Magnetometer range is set at ±400 uT with a resolution of 0.014 uT.
-//      Accelerometer and gyrospcope output data rate is fixed at 119 Hz.
+//      Accelerometer and gyroscope output data rate is fixed at 119 Hz.
 //      Magnetometer output data rate is fixed at 20 Hz.
 
 //BEGINING OF CENTRAL SCRIPT
@@ -26,8 +26,6 @@ bool connected = false;
 void setup() {
   //Serial baud rate set to be the same as default micro-ROS environment for eventual porting 
   Serial.begin(115200);
-  while (!Serial)
-    ;
 
   BLE.begin();
   Serial.println("BLE Central Node Running");
@@ -43,10 +41,11 @@ void setup() {
 
   Serial.println("Waiting for connection...");
 
-  //Scans for Acceleration, Gyroscope, and Magnetometer Service UUIDs
+  //Scans for Acceleration, Gyroscope, Magnetometer, and Quaternion Service UUIDs
   BLE.scanForUuid("19B10010-E8F2-537E-4F6C-D104768A1214");
   BLE.scanForUuid("20B10010-E8F2-537E-4F6C-D104768A1214");
   BLE.scanForUuid("30B10010-E8F2-537E-4F6C-D104768A1214");
+  BLE.scanForUuid("40B10010-E8F2-537E-4F6C-D104768A1214");
 }
 
 void loop() {
@@ -68,10 +67,11 @@ void loop() {
     BLE.stopScan();
     readPeripheral(peripheral);
 
-    //Scans for Acceleration, Gyroscope, and Magnetometer Service UUIDs again
+    //Scans for Acceleration, Gyroscope, Magnetometer, and Quaternion Service UUIDs
     BLE.scanForUuid("19B10010-E8F2-537E-4F6C-D104768A1214");
     BLE.scanForUuid("20B10010-E8F2-537E-4F6C-D104768A1214");
     BLE.scanForUuid("30B10010-E8F2-537E-4F6C-D104768A1214");
+    BLE.scanForUuid("40B10010-E8F2-537E-4F6C-D104768A1214");
   }
 }
 
@@ -92,84 +92,88 @@ void readPeripheral(BLEDevice peripheral) {
   }
 
   //If it finds all the desired IMU services it begins reading them
-  if (peripheral.hasService("19B10010-E8F2-537E-4F6C-D104768A1214") && peripheral.hasService("20B10010-E8F2-537E-4F6C-D104768A1214") && peripheral.hasService("30B10010-E8F2-537E-4F6C-D104768A1214")) {
+  if (peripheral.hasService("19B10010-E8F2-537E-4F6C-D104768A1214") && peripheral.hasService("20B10010-E8F2-537E-4F6C-D104768A1214") && peripheral.hasService("30B10010-E8F2-537E-4F6C-D104768A1214") && peripheral.hasService("40B10010-E8F2-537E-4F6C-D104768A1214")) {
     Serial.println("Found Services!");
-    BLECharacteristic accelX = peripheral.characteristic("19B10011-E8F2-537E-4F6C-D104768A1214");
-    BLECharacteristic accelY = peripheral.characteristic("19B10012-E8F2-537E-4F6C-D104768A1214");
-    BLECharacteristic accelZ = peripheral.characteristic("19B10013-E8F2-537E-4F6C-D104768A1214");
+    BLECharacteristic acceleration = peripheral.characteristic("19B10011-E8F2-537E-4F6C-D104768A1214");
 
-    BLECharacteristic gyroX = peripheral.characteristic("20B10011-E8F2-537E-4F6C-D104768A1214");
-    BLECharacteristic gyroY = peripheral.characteristic("20B10012-E8F2-537E-4F6C-D104768A1214");
-    BLECharacteristic gyroZ = peripheral.characteristic("20B10013-E8F2-537E-4F6C-D104768A1214");
+    BLECharacteristic gyroscope = peripheral.characteristic("20B10011-E8F2-537E-4F6C-D104768A1214");
 
-    BLECharacteristic magX = peripheral.characteristic("30B10011-E8F2-537E-4F6C-D104768A1214");
-    BLECharacteristic magY = peripheral.characteristic("30B10012-E8F2-537E-4F6C-D104768A1214");
-    BLECharacteristic magZ = peripheral.characteristic("30B10013-E8F2-537E-4F6C-D104768A1214");
+    BLECharacteristic magnetometer = peripheral.characteristic("30B10011-E8F2-537E-4F6C-D104768A1214");
+
+    BLECharacteristic quaternion = peripheral.characteristic("40B10011-E8F2-537E-4F6C-D104768A1214");
 
     //While the peripheral is connected and all services can be read, data is ingested and printed
     while (connected) {
-      if (accelX.canRead() && accelY.canRead() && accelZ.canRead() && gyroX.canRead() && gyroY.canRead() && gyroZ.canRead() && magX.canRead() && magY.canRead() && magZ.canRead()) {
+      if (acceleration.canRead() && gyroscope.canRead() && magnetometer.canRead() && quaternion.canRead()) {
 
         Serial.println("IMU Data: ");
-        Serial.print("\tAccelerometer data: ");
+        Serial.print("\tAcceleration data: ");
         Serial.println('\t');
-        double accelXValue;
-        accelX.readValue(&accelXValue, 8);
+        float aData[3];
+        acceleration.readValue(aData, 12);
+
         Serial.print("\t\tAccel X: ");
-        Serial.print(accelXValue);
+        Serial.print(aData[0]);
         Serial.println('\t');
 
-        double accelYValue;
-        accelY.readValue(&accelYValue, 8);
         Serial.print("\t\tAccel Y: ");
-        Serial.print(accelYValue);
+        Serial.print(aData[1]);
         Serial.println('\t');
 
-        double accelZValue;
-        accelZ.readValue(&accelZValue, 8);
         Serial.print("\t\tAccel Z: ");
-        Serial.print(accelZValue);
-        Serial.println();
+        Serial.print(aData[2]);
+        Serial.println('\t');
 
         Serial.print("\tGyroscope data: ");
         Serial.println('\t');
-        double gyroXValue;
-        gyroX.readValue(&gyroXValue, 8);
+        float gData[3];
+        gyroscope.readValue(gData, 12);
+
         Serial.print("\t\tGyro X: ");
-        Serial.print(gyroXValue);
+        Serial.print(gData[0]);
         Serial.println('\t');
 
-        double gyroYValue;
-        gyroY.readValue(&gyroYValue, 8);
         Serial.print("\t\tGyro Y: ");
-        Serial.print(gyroYValue);
+        Serial.print(gData[1]);
         Serial.println('\t');
 
-        double gyroZValue;
-        gyroZ.readValue(&gyroZValue, 8);
         Serial.print("\t\tGyro Z: ");
-        Serial.print(gyroZValue);
-        Serial.println();
+        Serial.print(gData[2]);
+        Serial.println('\t');
 
         Serial.print("\tMagnetometer data: ");
         Serial.println('\t');
-        double magXValue;
-        magX.readValue(&magXValue, 8);
+        float mData[3];
+        magnetometer.readValue(mData, 12);
+
         Serial.print("\t\tMag X: ");
-        Serial.print(magXValue);
+        Serial.print(mData[0]);
         Serial.println('\t');
 
-        double magYValue;
-        magY.readValue(&magYValue, 8);
         Serial.print("\t\tMag Y: ");
-        Serial.print(magYValue);
+        Serial.print(mData[1]);
         Serial.println('\t');
 
-        double magZValue;
-        magZ.readValue(&magZValue, 8);
         Serial.print("\t\tMag Z: ");
-        Serial.print(magZValue);
-        Serial.println();
+        Serial.print(mData[2]);
+        Serial.println('\t');
+
+        Serial.print("\tQuaternion data: ");
+        Serial.println('\t');
+        float qData[3];
+        quaternion.readValue(qData, 12);
+
+        Serial.print("\t\tHeading: ");
+        Serial.print(qData[0]);
+        Serial.println('\t');
+
+        Serial.print("\t\tPitch: ");
+        Serial.print(qData[1]);
+        Serial.println('\t');
+
+        Serial.print("\t\tRoll: ");
+        Serial.print(qData[2]);
+        Serial.println('\t');
       }
     }
   } else {
