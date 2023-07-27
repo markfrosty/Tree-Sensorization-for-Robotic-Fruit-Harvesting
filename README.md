@@ -43,7 +43,7 @@ micro_ros_arduino.h -> Install by following precompiled library instructions on 
 ### micro-ROS Arduino Library
 Due to default settings and limitations made out of the box, this library requires modification and re-building in order for full functionality to be achieved.
 
-The Arduino Nano RP2040 Connect uses '''colcon_verylowmem.meta''' which limits publishers:
+The Arduino Nano RP2040 Connect uses `colcon_verylowmem.meta` which limits publishers:
 
 
 ```
@@ -60,7 +60,8 @@ The Arduino Nano RP2040 Connect uses '''colcon_verylowmem.meta''' which limits p
 }
 ```
 
-In our case we need 12 publishers so this file must be modified to look more like the `colcon.meta` file but with even more publishers. After modification my `colcon_verylowmem.meta` file looks like this:
+In this case, we need 12 publishers so this file must be modified to look more like the `colcon.meta` file but with even more publishers. In order to edit the `colcon_verylowmem.meta` file, navigate to where your micro-ROS Arduino library is stored (`micro_ros_arduino`) and go to `extras/library_generation/` directory. Here you will find the `colcon_verylowmem.meta` file and will be able to change the parameters.
+After modification, my `colcon_verylowmem.meta` file looks like this:
 
 
 ```
@@ -79,3 +80,11 @@ In our case we need 12 publishers so this file must be modified to look more lik
 ```
 
 After making this change rebuilding of the library must occur and can be achieved by doing the following:
+
+1. If using Windows or macOS launch Docker engine. On Ubuntu you will not have to perform this step.
+2. Open a terminal window.
+3. Navigate to the micro-ROS Arduino Library folder. My path looked like this: `cd Documents/Arduino/libraries/micro_ros_arduino`
+4. Once in the micro-ROS Arduino Library and having made the changes to your `colcon_verylowmem.meta` file run the following commands:
+..1. `docker pull microros/micro_ros_static_library_builder:iron`
+..2. `docker run -it --rm -v $(pwd):/project --env MICROROS_LIBRARY_FOLDER=extras microros/micro_ros_static_library_builder:iron`
+5. This will take a while 
