@@ -181,3 +181,23 @@ docker run -it --rm -v /dev:/dev --privileged --net=host microros/micro-ros-agen
 
 6. Plug in all 3 Arduino Nano 33 BLE (peripheral devices) to USB ports or provide them power in whatever way you see fit subsequently plug in the Arduino Nano RP2040 Connect (central device) and wait for large amounts of scrolling change to appear as a connection is established between all peripherals and the central and messages are being published.
 7. After you see that all are connected, return to your ROS2 terminal window. Run the comand `ros2 topic list`. Here you should see 14 topics. It should look like this:
+
+```
+/accel0_data_topic
+/accel1_data_topic
+/accel2_data_topic
+/gyro0_data_topic
+/gyro1_data_topic
+/gyro2_data_topic
+/mag0_data_topic
+/mag1_data_topic
+/mag2_data_topic
+/orient0_data_topic
+/orient1_data_topic
+/orient2_data_topic
+/parameter_events
+/rosout
+```
+
+
+
