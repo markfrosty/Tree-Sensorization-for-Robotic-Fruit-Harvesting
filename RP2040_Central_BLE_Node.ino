@@ -1,18 +1,19 @@
 //Mark Frost, Oregon State University Intelligent Machines and Materials Lab, Summer 2023
 //Part of The Tree Sensorization Data Collection Suite
-//IMU Data Receiving Node
+//IMU Data Recieving Node
 //Inspired by https://github.com/little-scale/arduino-sketches/blob/master/BLE_IMU.ino
 //Derived from examples/ArduinoBLE/Central/LedControl
-//Version 2 July 20, 2023
+//Version 3 July 27, 2023
 //Central Device: Arduino Nano RP2040 Connect
 //Peripheral Device: Arduino Nano 33 BLE
+//This script only works for ONE peripheral. Can be used as a good testing and starting point
 //IMU: LSM9DS1
 //    DataSheet: https://www.st.com/resource/en/datasheet/lsm9ds1.pdf
 //    Standard Specification Cheat Sheet:
 //      Accelerometer range is set at ±4 g with a resolution of 0.122 mg. -> converted to m/s^2 on peripheral
 //      Gyroscope range is set at ±2000 dps with a resolution of 70 mdps.
 //      Magnetometer range is set at ±400 uT with a resolution of 0.014 uT.
-//      Accelerometer and gyroscope output data rate is fixed at 119 Hz.
+//      Accelerometer and gyrospcope output data rate is fixed at 119 Hz.
 //      Magnetometer output data rate is fixed at 20 Hz.
 
 //BEGINING OF CENTRAL SCRIPT
@@ -41,11 +42,11 @@ void setup() {
 
   Serial.println("Waiting for connection...");
 
-  //Scans for Acceleration, Gyroscope, Magnetometer, and Quaternion Service UUIDs
-  BLE.scanForUuid("19B10010-E8F2-537E-4F6C-D104768A1214");
-  BLE.scanForUuid("20B10010-E8F2-537E-4F6C-D104768A1214");
-  BLE.scanForUuid("30B10010-E8F2-537E-4F6C-D104768A1214");
-  BLE.scanForUuid("40B10010-E8F2-537E-4F6C-D104768A1214");
+  //Scans for Acceleration, Gyroscope, Magnetometer, and Orientation Service UUIDs
+  BLE.scanForUuid("19A10010-E8F2-537E-4F6C-D104768A1214");
+  BLE.scanForUuid("20A10010-E8F2-537E-4F6C-D104768A1214");
+  BLE.scanForUuid("30A10010-E8F2-537E-4F6C-D104768A1214");
+  BLE.scanForUuid("40A10010-E8F2-537E-4F6C-D104768A1214");
 }
 
 void loop() {
@@ -67,11 +68,11 @@ void loop() {
     BLE.stopScan();
     readPeripheral(peripheral);
 
-    //Scans for Acceleration, Gyroscope, Magnetometer, and Quaternion Service UUIDs
-    BLE.scanForUuid("19B10010-E8F2-537E-4F6C-D104768A1214");
-    BLE.scanForUuid("20B10010-E8F2-537E-4F6C-D104768A1214");
-    BLE.scanForUuid("30B10010-E8F2-537E-4F6C-D104768A1214");
-    BLE.scanForUuid("40B10010-E8F2-537E-4F6C-D104768A1214");
+    //Scans for Acceleration, Gyroscope, Magnetometer, and Orientation Service UUIDs
+    BLE.scanForUuid("19A10010-E8F2-537E-4F6C-D104768A1214");
+    BLE.scanForUuid("20A10010-E8F2-537E-4F6C-D104768A1214");
+    BLE.scanForUuid("30A10010-E8F2-537E-4F6C-D104768A1214");
+    BLE.scanForUuid("40A10010-E8F2-537E-4F6C-D104768A1214");
   }
 }
 
@@ -92,19 +93,23 @@ void readPeripheral(BLEDevice peripheral) {
   }
 
   //If it finds all the desired IMU services it begins reading them
-  if (peripheral.hasService("19B10010-E8F2-537E-4F6C-D104768A1214") && peripheral.hasService("20B10010-E8F2-537E-4F6C-D104768A1214") && peripheral.hasService("30B10010-E8F2-537E-4F6C-D104768A1214") && peripheral.hasService("40B10010-E8F2-537E-4F6C-D104768A1214")) {
+  if (peripheral.hasService("19A10010-E8F2-537E-4F6C-D104768A1214") && 
+      peripheral.hasService("20A10010-E8F2-537E-4F6C-D104768A1214") && 
+      peripheral.hasService("30A10010-E8F2-537E-4F6C-D104768A1214") && 
+      peripheral.hasService("40A10010-E8F2-537E-4F6C-D104768A1214")) {
+  
     Serial.println("Found Services!");
-    BLECharacteristic acceleration = peripheral.characteristic("19B10011-E8F2-537E-4F6C-D104768A1214");
+    BLECharacteristic acceleration = peripheral.characteristic("19A10011-E8F2-537E-4F6C-D104768A1214");
 
-    BLECharacteristic gyroscope = peripheral.characteristic("20B10011-E8F2-537E-4F6C-D104768A1214");
+    BLECharacteristic gyroscope = peripheral.characteristic("20A10011-E8F2-537E-4F6C-D104768A1214");
 
-    BLECharacteristic magnetometer = peripheral.characteristic("30B10011-E8F2-537E-4F6C-D104768A1214");
+    BLECharacteristic magnetometer = peripheral.characteristic("30A10011-E8F2-537E-4F6C-D104768A1214");
 
-    BLECharacteristic quaternion = peripheral.characteristic("40B10011-E8F2-537E-4F6C-D104768A1214");
+    BLECharacteristic orientation = peripheral.characteristic("40A10011-E8F2-537E-4F6C-D104768A1214");
 
     //While the peripheral is connected and all services can be read, data is ingested and printed
     while (connected) {
-      if (acceleration.canRead() && gyroscope.canRead() && magnetometer.canRead() && quaternion.canRead()) {
+      if (acceleration.canRead() && gyroscope.canRead() && magnetometer.canRead() && orientation.canRead()) {
 
         Serial.println("IMU Data: ");
         Serial.print("\tAcceleration data: ");
@@ -158,21 +163,21 @@ void readPeripheral(BLEDevice peripheral) {
         Serial.print(mData[2]);
         Serial.println('\t');
 
-        Serial.print("\tQuaternion data: ");
+        Serial.print("\tOrientation data: ");
         Serial.println('\t');
-        float qData[3];
-        quaternion.readValue(qData, 12);
+        float oData[3];
+        orientation.readValue(oData, 12);
 
         Serial.print("\t\tHeading: ");
-        Serial.print(qData[0]);
+        Serial.print(oData[0]);
         Serial.println('\t');
 
         Serial.print("\t\tPitch: ");
-        Serial.print(qData[1]);
+        Serial.print(oData[1]);
         Serial.println('\t');
 
         Serial.print("\t\tRoll: ");
-        Serial.print(qData[2]);
+        Serial.print(oData[2]);
         Serial.println('\t');
       }
     }
