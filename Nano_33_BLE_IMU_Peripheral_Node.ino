@@ -3,7 +3,7 @@
 //IMU Data Collection and BLE Transmission Node
 //Inspired by https://github.com/little-scale/arduino-sketches/blob/master/BLE_IMU.ino
 //Derived from examples/ArduinoBLE/Central/LedControl
-//Version 2 July 20, 2023
+//Version 3 July 27, 2023
 //Central Device: Arduino Nano RP2040 Connect
 //Peripheral Device: Arduino Nano 33 BLE
 //IMU: LSM9DS1
@@ -12,7 +12,7 @@
 //      Accelerometer range is set at ±4 g with a resolution of 0.122 mg. -> converted to m/s^2 on peripheral
 //      Gyroscope range is set at ±2000 dps with a resolution of 70 mdps.
 //      Magnetometer range is set at ±400 uT with a resolution of 0.014 uT.
-//      Accelerometer and gyroscope output data rate is fixed at 119 Hz.
+//      Accelerometer and gyrospcope output data rate is fixed at 119 Hz.
 //      Magnetometer output data rate is fixed at 20 Hz.
 
 //BEGINING OF PERIPHERAL SCRIPT
@@ -34,25 +34,23 @@ float Ax, Ay, Az;
 float Gx, Gy, Gz;
 //Magnetometer Axis
 float Mx, My, Mz;
-//Quaternion Orientation Variables
+//Quaternion derived Orientation Variables
 float roll, pitch, heading;
 
 //Establishment of BLE Services
-BLEService AccelService("19B10010-E8F2-537E-4F6C-D104768A1214");
-BLEService GyroService("20B10010-E8F2-537E-4F6C-D104768A1214");
-BLEService MagService("30B10010-E8F2-537E-4F6C-D104768A1214");
-BLEService QuatService("40B10010-E8F2-537E-4F6C-D104768A1214");
+BLEService AccelService("19A10010-E8F2-537E-4F6C-D104768A1214");
+BLEService GyroService("20A10010-E8F2-537E-4F6C-D104768A1214");
+BLEService MagService("30A10010-E8F2-537E-4F6C-D104768A1214");
+BLEService OrientService("40A10010-E8F2-537E-4F6C-D104768A1214");
 
 //Acceleration characteristic to send byte array of values
-BLECharacteristic acceleration("19B10011-E8F2-537E-4F6C-D104768A1214", BLERead | BLENotify, 12);
-
+BLECharacteristic acceleration("19A10011-E8F2-537E-4F6C-D104768A1214", BLERead | BLENotify, 12);
 //Gyroscope characteristic to send byte array of values
-BLECharacteristic gyroscope("20B10011-E8F2-537E-4F6C-D104768A1214", BLERead | BLENotify, 12);
+BLECharacteristic gyroscope("20A10011-E8F2-537E-4F6C-D104768A1214", BLERead | BLENotify, 12);
 //Magnetometer characteristic to send byte array of values
-BLECharacteristic magnetometer("30B10011-E8F2-537E-4F6C-D104768A1214", BLERead | BLENotify, 12);
-
-//Quaternion characteristic to send byte array of values
-BLECharacteristic quaternion("40B10011-E8F2-537E-4F6C-D104768A1214", BLERead | BLENotify, 12);
+BLECharacteristic magnetometer("30A10011-E8F2-537E-4F6C-D104768A1214", BLERead | BLENotify, 12);
+//Orientation characteristic to send byte array of values
+BLECharacteristic orientation("40A10011-E8F2-537E-4F6C-D104768A1214", BLERead | BLENotify, 12);
 
 void setup() {
   //Serial baud rate set to be the same as default micro-ROS environment for eventual porting 
@@ -69,17 +67,20 @@ void setup() {
     while (1);
   }
 
-  //Begins the Madgwick processing filter for quaternions
+  //Begins the Madgwick processing filter for orientations
   filter.begin(sensorRate);
 
   //Local peripheral name is defined
-  BLE.setLocalName("IMUPeripheralService");
+  //CHANGE # FOR EACH BOARD AND UPLOAD
+  BLE.setLocalName("IMUPeripheral1");
+
+  BLE.setConnectionInterval(6, 6);
 
   //Sets the advertised service UUIDs for the specific services
   BLE.setAdvertisedService(AccelService);
   BLE.setAdvertisedService(GyroService);
   BLE.setAdvertisedService(MagService);
-  BLE.setAdvertisedService(QuatService);
+  BLE.setAdvertisedService(OrientService);
 
   //Adds characteristics to the services
   AccelService.addCharacteristic(acceleration);
@@ -88,13 +89,13 @@ void setup() {
 
   MagService.addCharacteristic(magnetometer);
 
-  QuatService.addCharacteristic(quaternion);
+  OrientService.addCharacteristic(orientation);
 
   //Adds services the peripheral provides
   BLE.addService(AccelService);
   BLE.addService(GyroService);
   BLE.addService(MagService);
-  BLE.addService(QuatService);
+  BLE.addService(OrientService);
 
   //Starts advertising services
   BLE.advertise();
@@ -135,19 +136,19 @@ void loop() {
       mData[1] = My;
       mData[2] = Mz;
 
-      float qData[3];
-      qData[0] = heading;
-      qData[1] = pitch;
-      qData[2] = roll;
+      float oData[3];
+      oData[0] = heading;
+      oData[1] = pitch;
+      oData[2] = roll;
 
       // Write sensor values to service characteristics
-      acceleration.setValue((byte *) &aData, 12);
+      acceleration.writeValue((byte *) &aData, 12);
       
-      gyroscope.setValue((byte *) &gData, 12);
+      gyroscope.writeValue((byte *) &gData, 12);
 
-      magnetometer.setValue((byte *) &mData, 12);
+      magnetometer.writeValue((byte *) &mData, 12);
 
-      quaternion.setValue((byte *) &qData, 12);
+      orientation.writeValue((byte *) &oData, 12);
     }
   }
 }
