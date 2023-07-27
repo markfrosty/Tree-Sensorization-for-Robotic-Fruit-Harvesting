@@ -46,7 +46,7 @@ Due to default settings and limitations made out of the box, this library requir
 The Arduino Nano RP2040 Connect uses '''colcon_verylowmem.meta''' which limits publishers:
 
 
-'''
+```
 "rmw_microxrcedds": {
     "cmake-args": [
     "-DRMW_UXRCE_MAX_NODES=1",
@@ -58,12 +58,12 @@ The Arduino Nano RP2040 Connect uses '''colcon_verylowmem.meta''' which limits p
     "-DRMW_UXRCE_TRANSPORT=custom"
     ]
 }
-'''
+```
 
-In our case we need 12 publishers so this file must be modified to look more like the '''colcon.meta''' file but with even more publishers. After modification my '''colcon_verylowmem.meta''' file looks like this:
+In our case we need 12 publishers so this file must be modified to look more like the `colcon.meta` file but with even more publishers. After modification my `colcon_verylowmem.meta` file looks like this:
 
 
-'''
+```
 "rmw_microxrcedds": {
             "cmake-args": [
                 "-DRMW_UXRCE_MAX_NODES=1",
@@ -76,6 +76,6 @@ In our case we need 12 publishers so this file must be modified to look more lik
             ]
         }
     }
-'''
+```
 
 After making this change rebuilding of the library must occur and can be achieved by doing the following:
