@@ -1,13 +1,13 @@
 ![OSU_horizontal_2C_O_over_B](https://github.com/markfrosty/Tree-Sensorization/assets/124550575/96075900-d82d-4ea0-b5f4-37118a41f9b5)
 ![AgAID_ExtendedLogo](https://github.com/markfrosty/Tree-Sensorization/assets/124550575/e2b1272c-e39a-4c16-8cd7-0012b450476d)
 
-# Tree-Sensorization
 ## Advisor: Dr. Joe Davidson
 
 ## Mentor: Miranda Cravetz
 
 ## Intern, Engineer, and Developer: Mark Frost
 
+# Tree-Sensorization
 
 ROS2 and micro-ROS integration with BLE Transmission of IMU data from Arduino to measure vibratory responses and aid in picking for a robotic apple-picking platform at Oregon State University College of Engineering Intelligent Machines and Materials Lab.
 
