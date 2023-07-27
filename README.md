@@ -24,6 +24,9 @@ Download Link: https://www.arduino.cc/en/software
 In order for these boards to function as intended the following libraries are required:
 
 Arduino_LSM9DS1.h
+
 ArduinoBLE.h
+
 MadgwickAHRS.h
+
 micro_ros_arduino.h
