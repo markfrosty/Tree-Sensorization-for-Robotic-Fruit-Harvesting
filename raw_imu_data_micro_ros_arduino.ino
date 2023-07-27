@@ -1,76 +1,80 @@
 //Mark Frost, Oregon State University Intelligent Machines and Materials Lab, Summer 2023
 //Part of The Tree Sensorization Data Collection Suite
 //Arduino IMU Data Over BLE Subscription Node With micro-ROS Publisher
-//Version 2 July 20, 2023
+//Inspired and Derived from micro-ROS Arduino examples and https://github.com/arduino-libraries/ArduinoBLE/issues/185
+//Version 3 July 27, 2023
 //Central Device: Arduino Nano RP2040 Connect
-//Peripheral Device: Arduino Nano 33 BLE
-//IMU: LSM9DS1
-//    DataSheet: https://www.st.com/resource/en/datasheet/lsm9ds1.pdf
-//    Standard Specification Cheat Sheet:
-//      Accelerometer range is set at ±4 g with a resolution of 0.122 mg. -> converted to m/s^2 on peripheral
-//      Gyroscope range is set at ±2000 dps with a resolution of 70 mdps.
-//      Magnetometer range is set at ±400 uT with a resolution of 0.014 uT.
-//      Accelerometer and gyrospcope output data rate is fixed at 119 Hz.
-//      Magnetometer output data rate is fixed at 20 Hz.
+//Peripheral Device(s): Arduino Nano 33 BLE
+//Set Up For 3 Peripherals
 
 //BEGINING OF MICRO-ROS CENTRAL SCRIPT
 
-//Micro-ROS library
+//Library Intializations
 #include <micro_ros_arduino.h>
-
-//Bluetooth Low Energy Library for Wireless Communication
 #include <ArduinoBLE.h>
-
-//IMU Library (unncessary but included)
-#include <Arduino_LSM9DS1.h>
-
-//ROS client librarys for publication to topic
-#include <stdio.h>
 #include <rcl/rcl.h>
 #include <rcl/error_handling.h>
 #include <rclc/rclc.h>
 #include <rclc/executor.h>
 #include <geometry_msgs/msg/vector3.h>
 
-//Publication variables establishment
-geometry_msgs__msg__Vector3 a_msg;
-geometry_msgs__msg__Vector3 g_msg;
-geometry_msgs__msg__Vector3 m_msg;
-geometry_msgs__msg__Vector3 q_msg;
-rcl_publisher_t accel_publisher;
-rcl_publisher_t gyro_publisher;
-rcl_publisher_t mag_publisher;
-rcl_publisher_t quat_publisher;
-rclc_executor_t executor;
+//Definition of Time Intervals and Number of Peripherals
+#define BLE_MAX_PERIPHERALS 3
+#define BLE_SCAN_INTERVALL 10000
+#define BLE_SCAN_new_devices 10000
+
+//BLE Peripheral and Characteristic Establishment
+BLEDevice peripherals[BLE_MAX_PERIPHERALS];
+BLECharacteristic accelerations[BLE_MAX_PERIPHERALS];
+BLECharacteristic gyroscopes[BLE_MAX_PERIPHERALS];
+BLECharacteristic magnetometers[BLE_MAX_PERIPHERALS];
+BLECharacteristic orientations[BLE_MAX_PERIPHERALS];
+
+//Establishment of Data Variables
+float aData[3];
+float gData[3];
+float mData[3];
+float oData[3];
+
+//Logic Variables
+bool peripheralsConnected[BLE_MAX_PERIPHERALS] = { 0 };
+bool peripheralsToConnect[BLE_MAX_PERIPHERALS] = { 0 };
+bool ok = true;
+int peripheralCounter = 0;
+
+//Timing Variable
+unsigned long control_time;
+
+//Establishment of ROS Parameters 
+geometry_msgs__msg__Vector3 a_msg[BLE_MAX_PERIPHERALS] = { 0 };
+geometry_msgs__msg__Vector3 g_msg[BLE_MAX_PERIPHERALS] = { 0 };
+geometry_msgs__msg__Vector3 m_msg[BLE_MAX_PERIPHERALS] = { 0 };
+geometry_msgs__msg__Vector3 o_msg[BLE_MAX_PERIPHERALS] = { 0 };
+rcl_publisher_t accel_publisher[BLE_MAX_PERIPHERALS] = { 0 };
+rcl_publisher_t gyro_publisher[BLE_MAX_PERIPHERALS] = { 0 };
+rcl_publisher_t mag_publisher[BLE_MAX_PERIPHERALS] = { 0 };
+rcl_publisher_t orient_publisher[BLE_MAX_PERIPHERALS] = { 0 };
 rclc_support_t support;
 rcl_allocator_t allocator;
 rcl_node_t node;
-rcl_timer_t timer;
 
-//Establishes flag for connection and continuous data collection
-bool connected = false;
-
+//Sets LED Pin
 #define LED_PIN 13
 
-//Checks executor and redirects to error loop if there's an issue
+//Establishes Checking for Issues and Re-Direction to Error Loop if Present
 #define RCCHECK(fn) {rcl_ret_t temp_rc = fn; if ((temp_rc != RCL_RET_OK)) { error_loop(); }}
 #define RCSOFTCHECK(fn) {rcl_ret_t temp_rc = fn; if ((temp_rc != RCL_RET_OK)) {}}
 
-//error loop
+//Error Loop
 void error_loop() {
   while (1) {
     digitalWrite(LED_PIN, !digitalRead(LED_PIN));
-    delay(10);
+    delay(500);
   }
 }
 
-void timer_callback(rcl_timer_t* timer, int64_t last_call_time) {
-  RCLC_UNUSED(last_call_time);
-}
-
 void setup() {
-  //Enables IMU and BLE systems 
-  IMU.begin();
+  //Initializes BLE Device
   BLE.begin();
 
   //Sets the name of the central node
@@ -82,150 +86,254 @@ void setup() {
   //Start advertising as central node
   BLE.advertise();
 
-  BLE.scanForUuid("19B10010-E8F2-537E-4F6C-D104768A1214");  //scan for Accel Service
-  BLE.scanForUuid("20B10010-E8F2-537E-4F6C-D104768A1214");  //scan for Gyro Service
-  BLE.scanForUuid("30B10010-E8F2-537E-4F6C-D104768A1214");  //scan for Mag service
-  BLE.scanForUuid("40B10010-E8F2-537E-4F6C-D104768A1214");  //scan for Quaternion service
+  //Begins the Peripheral Counter at 0
+  peripheralCounter = 0;
 
+  //Establishes the Transport Type
   set_microros_transports();
 
-  pinMode(LED_PIN, OUTPUT);
-  digitalWrite(LED_PIN, HIGH);
-
-  delay(100);
-
+  //Establishes micro-ROS Allocator
   allocator = rcl_get_default_allocator();
 
-  //Initialization
+  //Initializes rcl and Attempts Re-Connection if Necessary
   RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
 
-  //Establishment of publication node
+  //Creates Node for Topics to be Published
   RCCHECK(rclc_node_init_default(&node, "imu_publisher_node", "", &support));
 
-  //Publisher creation and ROS topic establishment 
-  RCCHECK(rclc_publisher_init_default(
-    &accel_publisher,
+  //Topic Creation
+  RCCHECK(rclc_publisher_init_best_effort(
+    &accel_publisher[0],
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
-    "accel_data_topic"));
+    "accel0_data_topic"));
 
-  RCCHECK(rclc_publisher_init_default(
-    &gyro_publisher,
+  RCCHECK(rclc_publisher_init_best_effort(
+    &accel_publisher[1],
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
-    "gyro_data_topic"));
+    "accel1_data_topic"));
 
-  RCCHECK(rclc_publisher_init_default(
-    &mag_publisher,
+  RCCHECK(rclc_publisher_init_best_effort(
+    &accel_publisher[2],
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
-    "mag_data_topic"));
+    "accel2_data_topic"));
 
-  RCCHECK(rclc_publisher_init_default(
-    &quat_publisher,
+  RCCHECK(rclc_publisher_init_best_effort(
+    &gyro_publisher[0],
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
-    "quat_data_topic"));
+    "gyro0_data_topic"));
 
-  //Timer Creation
-  const unsigned int timer_timeout = 1000;
-  RCCHECK(rclc_timer_init_default(
-    &timer,
-    &support,
-    RCL_MS_TO_NS(timer_timeout),
-    timer_callback));
+  RCCHECK(rclc_publisher_init_best_effort(
+    &gyro_publisher[1],
+    &node,
+    ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
+    "gyro1_data_topic"));
 
-  //Creates executor
-  RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));
-  RCCHECK(rclc_executor_add_timer(&executor, &timer));
+  RCCHECK(rclc_publisher_init_best_effort(
+    &gyro_publisher[2],
+    &node,
+    ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
+    "gyro2_data_topic"));
+
+  RCCHECK(rclc_publisher_init_best_effort(
+    &mag_publisher[0],
+    &node,
+    ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
+    "mag0_data_topic"));
+
+  RCCHECK(rclc_publisher_init_best_effort(
+    &mag_publisher[1],
+    &node,
+    ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
+    "mag1_data_topic"));
+
+  RCCHECK(rclc_publisher_init_best_effort(
+    &mag_publisher[2],
+    &node,
+    ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
+    "mag2_data_topic"));
+
+  RCCHECK(rclc_publisher_init_best_effort(
+    &orient_publisher[0],
+    &node,
+    ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
+    "orient0_data_topic"));
+
+  RCCHECK(rclc_publisher_init_best_effort(
+    &orient_publisher[1],
+    &node,
+    ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
+    "orient1_data_topic"));
+
+  RCCHECK(rclc_publisher_init_best_effort(
+    &orient_publisher[2],
+    &node,
+    ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
+    "orient2_data_topic"));
 }
 
 void loop() {
-  delay(100);
+  //Scans for BLE Services
+  BLE.scanForUuid("19A10010-E8F2-537E-4F6C-D104768A1214");
+  BLE.scanForUuid("20A10010-E8F2-537E-4F6C-D104768A1214");
+  BLE.scanForUuid("30A10010-E8F2-537E-4F6C-D104768A1214");
+  BLE.scanForUuid("40A10010-E8F2-537E-4F6C-D104768A1214");
 
-  RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
-
-  BLEDevice peripheral = BLE.available();
-  if (peripheral) {
-
-    //If the name doesn't have "IMUPeripheralService" it is ignored
-    if (peripheral.localName().indexOf("IMUPeripheralService") < 0) {
-      return;
-    }
-    BLE.stopScan();
-
-    //Reads info from peripheral device(s)
-    readPeripheral(peripheral);
-
-    BLE.scanForUuid("19B10010-E8F2-537E-4F6C-D104768A1214");  //scan for Accel Service
-    BLE.scanForUuid("20B10010-E8F2-537E-4F6C-D104768A1214");  //scan for Gyro Service
-    BLE.scanForUuid("30B10010-E8F2-537E-4F6C-D104768A1214");  //scan for Mag service
-    BLE.scanForUuid("40B10010-E8F2-537E-4F6C-D104768A1214");  //scan for Quaternion service
-  }
-}
-
-void readPeripheral(BLEDevice peripheral) {
-  if (peripheral.connect()) {
-    connected = true;
-  } else {
-    digitalWrite(LED_PIN, !digitalRead(LED_PIN));
-    delay(500);
-  }
-
-  if (!peripheral.discoverAttributes()) {
-    peripheral.disconnect();
-    return;
-  }
-
-  //If it finds all the desired IMU services it begins reading them
-  if (peripheral.hasService("19B10010-E8F2-537E-4F6C-D104768A1214") && peripheral.hasService("20B10010-E8F2-537E-4F6C-D104768A1214") && peripheral.hasService("30B10010-E8F2-537E-4F6C-D104768A1214") && peripheral.hasService("40B10010-E8F2-537E-4F6C-D104768A1214")) {
-
-    BLECharacteristic acceleration = peripheral.characteristic("19B10011-E8F2-537E-4F6C-D104768A1214");
-
-    BLECharacteristic gyroscope = peripheral.characteristic("20B10011-E8F2-537E-4F6C-D104768A1214");
-
-    BLECharacteristic magnetometer = peripheral.characteristic("30B10011-E8F2-537E-4F6C-D104768A1214");
-
-    BLECharacteristic quaternion = peripheral.characteristic("40B10011-E8F2-537E-4F6C-D104768A1214");
-
-    while (connected) {
-      if (acceleration.canRead() && gyroscope.canRead() && magnetometer.canRead() && quaternion.canRead()) {
-        //ROS messages are published to topics here
-        RCSOFTCHECK(rcl_publish(&accel_publisher, &a_msg, NULL) && rcl_publish(&gyro_publisher, &g_msg, NULL) && rcl_publish(&mag_publisher, &m_msg, NULL) && rcl_publish(&quat_publisher, &q_msg, NULL));
-
-        //Data is read
-        float aData[3];
-        acceleration.readValue(aData, 12);
-
-        float gData[3];
-        gyroscope.readValue(gData, 12);
-
-        float mData[3];
-        magnetometer.readValue(mData, 12);
-
-        float qData[3];
-        quaternion.readValue(qData, 12);
-
-        //IMU data is ingested and passed through to ROS message
-        a_msg.x = aData[0];
-        a_msg.y = aData[1];
-        a_msg.z = aData[2];
-
-        g_msg.x = gData[0];
-        g_msg.y = gData[1];
-        g_msg.z = gData[2];
-
-        m_msg.x = mData[0];
-        m_msg.y = mData[1];
-        m_msg.z = mData[2];
-
-        q_msg.x = qData[0];
-        q_msg.y = qData[1];
-        q_msg.z = qData[2];
-
+  unsigned long startMillis = millis();
+  while (millis() - startMillis < BLE_SCAN_INTERVALL && peripheralCounter < BLE_MAX_PERIPHERALS) {
+    BLEDevice peripheral = BLE.available();
+    if (peripheral) {
+      //If device has name of interest, is not already in the list to be connected or in the list of connected devices
+      if (peripheral.localName() == "IMUPeripheral1" && !peripheralsToConnect[0] && !peripheralsConnected[0]) {
+        peripherals[0] = peripheral;
+        peripheralCounter++;
+        peripheralsToConnect[0] = true;
+      }
+      if (peripheral.localName() == "IMUPeripheral2" && !peripheralsToConnect[1] && !peripheralsConnected[1]) {
+        peripherals[1] = peripheral;
+        peripheralCounter++;
+        peripheralsToConnect[1] = true;
+      }
+      if (peripheral.localName() == "IMUPeripheral3" && !peripheralsToConnect[2] && !peripheralsConnected[2]) {
+        peripherals[2] = peripheral;
+        peripheralCounter++;
+        peripheralsToConnect[2] = true;
       }
     }
   }
-  peripheral.disconnect();
-  connected = false;
+  BLE.stopScan();
+
+  //Connects to Desired Devices That are NOT Already Connected
+  for (int i = 0; i < BLE_MAX_PERIPHERALS; i++) {
+
+    if (peripheralsToConnect[i]) {
+
+      peripherals[i].connect();
+      peripherals[i].discoverAttributes();
+
+      //Characteristic Variables are Set
+      BLECharacteristic acceleration = peripherals[i].characteristic("19A10011-E8F2-537E-4F6C-D104768A1214");
+
+      BLECharacteristic gyroscope = peripherals[i].characteristic("20A10011-E8F2-537E-4F6C-D104768A1214");
+
+      BLECharacteristic magnetometer = peripherals[i].characteristic("30A10011-E8F2-537E-4F6C-D104768A1214");
+
+      BLECharacteristic orientation = peripherals[i].characteristic("40A10011-E8F2-537E-4F6C-D104768A1214");
+
+      //Subscriptions to Characteristics are Managed
+      if (acceleration) {
+        accelerations[i] = acceleration;
+        accelerations[i].subscribe();
+      }
+
+      if (gyroscope) {
+        gyroscopes[i] = gyroscope;
+        gyroscopes[i].subscribe();
+      }
+
+      if (magnetometer) {
+        magnetometers[i] = magnetometer;
+        magnetometers[i].subscribe();
+      }
+
+      if (orientation){
+        orientations[i] = orientation;
+        orientations[i].subscribe();
+      }
+    }
+
+    peripheralsConnected[i] = true;
+    peripheralsToConnect[i] = false;
+  }
+
+
+  control_time = millis();
+  ok = true;
+  while (ok) {
+    if (peripheralCounter < BLE_MAX_PERIPHERALS) {
+      //if not all devices connected, redo search after BLE_SCAN_new_devices time
+      if (millis() - control_time > BLE_SCAN_new_devices) {
+        ok = false;
+      }
+    }
+    for (int i = 0; i < BLE_MAX_PERIPHERALS; i++) {
+      //If the i_th device is supposed to be connected
+      if (peripheralsConnected[i]) {
+        //Check if it disconnected in the meantime
+        if (!peripherals[i].connected()) {
+          ok = false;
+          peripheralsConnected[i] = false;
+          peripheralCounter--;
+        } else {
+          //If Peripherals are Still Connected and Values are Updated, Values Read and Published
+          if (accelerations[i].valueUpdated()) {
+            accelerations[i].readValue(aData, 12);
+
+            a_msg[i].x = aData[0];
+            a_msg[i].y = aData[1];
+            a_msg[i].z = aData[2];
+
+            if (i == 0) {
+              RCSOFTCHECK(rcl_publish(&accel_publisher[0], &a_msg[0], NULL));
+            } else if (i == 1) {
+              RCSOFTCHECK(rcl_publish(&accel_publisher[1], &a_msg[1], NULL));
+            } else {
+              RCSOFTCHECK(rcl_publish(&accel_publisher[2], &a_msg[2], NULL));
+            }
+          }
+
+          if (gyroscopes[i].valueUpdated()) {
+            gyroscopes[i].readValue(gData, 12);
+
+            g_msg[i].x = gData[0];
+            g_msg[i].y = gData[1];
+            g_msg[i].z = gData[2];
+
+            if (i == 0) {
+              RCSOFTCHECK(rcl_publish(&gyro_publisher[0], &g_msg[0], NULL));
+            } else if (i == 1) {
+              RCSOFTCHECK(rcl_publish(&gyro_publisher[1], &g_msg[1], NULL));
+            } else {
+              RCSOFTCHECK(rcl_publish(&gyro_publisher[2], &g_msg[2], NULL));
+            }
+          }
+
+          if (magnetometers[i].valueUpdated()) {
+            magnetometers[i].readValue(mData, 12);
+
+            m_msg[i].x = mData[0];
+            m_msg[i].y = mData[1];
+            m_msg[i].z = mData[2];
+
+            if (i == 0) {
+              RCSOFTCHECK(rcl_publish(&mag_publisher[0], &m_msg[0], NULL));
+            } else if (i == 1) {
+              RCSOFTCHECK(rcl_publish(&mag_publisher[1], &m_msg[1], NULL));
+            } else {
+              RCSOFTCHECK(rcl_publish(&mag_publisher[2], &m_msg[2], NULL));
+            }
+          }
+
+          if (orientations[i].valueUpdated()) {
+            orientations[i].readValue(oData, 12);
+
+            o_msg[i].x = oData[0];
+            o_msg[i].y = oData[1];
+            o_msg[i].z = oData[2];
+
+            if (i == 0) {
+              RCSOFTCHECK(rcl_publish(&orient_publisher[0], &o_msg[0], NULL));
+            } else if (i == 1) {
+              RCSOFTCHECK(rcl_publish(&orient_publisher[1], &o_msg[1], NULL));
+            } else {
+              RCSOFTCHECK(rcl_publish(&orient_publisher[2], &o_msg[2], NULL));
+            }
+          }
+        }
+      }
+    }
+  }
 }
