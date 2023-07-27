@@ -7,9 +7,9 @@ My goal is to improve picking models based on IMU data from an Arduino Nano 33 B
 
 The associated nodes posted here are designed to assist those using BLE to focus on data collection, publication, and ROS environment integration while cutting down on distracting features in most relevant examples.
 
-**#Current Status**
+# Current Status
 Nano_33_BLE_IMU_Peripheral_Node: Stable and Functioning
 RP2040_Central_BLE_Node: Stable and Functioning
 raw_imu_data_micro_ros_arduino: Stable and Fully Operational for up to 3 Peripheral Devices
 
-**#Setup**
+# Setup
