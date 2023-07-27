@@ -1,4 +1,8 @@
 # Tree-Sensorization
+![alt text](https://github.com/[markfrosty]/[Tree-Sensorization]/blob/[main]/OSU_horizontal_2C_O_over_B.png?raw=true)
+
+![alt text](https://github.com/[markfrosty]/[Tree-Sensorization]/blob/[main]/AgAID_ExtendedLogo.png?raw=true)
+
 ROS2 and micro-ROS integration with BLE Transmission of IMU data from Arduino to measure vibratory responses and aid in picking for a robotic apple-picking platform at Oregon State University College of Engineering Intelligent Machines and Materials Lab.
 
 This is part of a summer research internship through the AgAID Institute and Oregon State University College of Engineering Intelligent Machines and Materials Lab.
