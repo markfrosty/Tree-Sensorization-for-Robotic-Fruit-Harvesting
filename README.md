@@ -1,5 +1,6 @@
 ![OSU_horizontal_2C_O_over_B](https://github.com/markfrosty/Tree-Sensorization/assets/124550575/96075900-d82d-4ea0-b5f4-37118a41f9b5)
-![Uploading AgAID_ExtendedLogo.png…]()
+![AgAID_ExtendedLogo](https://github.com/markfrosty/Tree-Sensorization/assets/124550575/e2b1272c-e39a-4c16-8cd7-0012b450476d)
+
 # Tree-Sensorization
 
 
