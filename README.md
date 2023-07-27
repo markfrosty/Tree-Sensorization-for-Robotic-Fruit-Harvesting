@@ -14,19 +14,26 @@ raw_imu_data_micro_ros_arduino: Stable and Fully Operational for up to 3 Periphe
 
 ## Setup
 A computer running Ubuntu 22.04 and a MacBook Pro running macOS Ventura 13.4 were used for development. The only requirements for this are a computer running Ubuntu and installations of the Arduino IDE (with required libraries) and Docker. 
+
 IMPORTANT: Linux equipped computer is required to expose serial ports to the micro-ROS agent running in Docker.
 
 ### Arduino IDE
 Follow the most up-to-date instructions for the installation on your OS of choice.
+
 Download Link: https://www.arduino.cc/en/software
 
 #### Required Libraries
 In order for these boards to function as intended the following libraries are required:
 
-Arduino_LSM9DS1.h
+Arduino_LSM9DS1.h -> Install through the libraries tab in the Arduino IDE
 
-ArduinoBLE.h
+ArduinoBLE.h -> Install through the libraries tab in the Arduino IDE
 
-MadgwickAHRS.h
+MadgwickAHRS.h -> Install through the libraries tab in the Arduino IDE
 
-micro_ros_arduino.h
+micro_ros_arduino.h -> Install by following precompiled library instructions on https://github.com/micro-ROS/micro_ros_arduino
+
+### micro-ROS Arduino Library
+Due to default settings and limitations made out of the box, this library requires modification and re-building in order for full functionality to be achieved.
+
+
