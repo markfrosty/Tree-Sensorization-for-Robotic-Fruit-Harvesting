@@ -43,4 +43,39 @@ micro_ros_arduino.h -> Install by following precompiled library instructions on 
 ### micro-ROS Arduino Library
 Due to default settings and limitations made out of the box, this library requires modification and re-building in order for full functionality to be achieved.
 
+The Arduino Nano RP2040 Connect uses '''colcon_verylowmem.meta''' which limits publishers:
 
+
+'''
+"rmw_microxrcedds": {
+    "cmake-args": [
+    "-DRMW_UXRCE_MAX_NODES=1",
+    "-DRMW_UXRCE_MAX_PUBLISHERS=2",
+    "-DRMW_UXRCE_MAX_SUBSCRIPTIONS=1",
+    "-DRMW_UXRCE_MAX_SERVICES=0",
+    "-DRMW_UXRCE_MAX_CLIENTS=1",
+    "-DRMW_UXRCE_MAX_HISTORY=1",
+    "-DRMW_UXRCE_TRANSPORT=custom"
+    ]
+}
+'''
+
+In our case we need 12 publishers so this file must be modified to look more like the '''colcon.meta''' file but with even more publishers. After modification my '''colcon_verylowmem.meta''' file looks like this:
+
+
+'''
+"rmw_microxrcedds": {
+            "cmake-args": [
+                "-DRMW_UXRCE_MAX_NODES=1",
+                "-DRMW_UXRCE_MAX_PUBLISHERS=13",
+                "-DRMW_UXRCE_MAX_SUBSCRIPTIONS=5",
+                "-DRMW_UXRCE_MAX_SERVICES=1",
+                "-DRMW_UXRCE_MAX_CLIENTS=1",
+                "-DRMW_UXRCE_MAX_HISTORY=4",
+                "-DRMW_UXRCE_TRANSPORT=custom"
+            ]
+        }
+    }
+'''
+
+After making this change rebuilding of the library must occur and can be achieved by doing the following:
