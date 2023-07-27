@@ -173,3 +173,11 @@ In order to use these scripts and 3 peripherals in a micro-ROS/ROS2 environment 
 2. Open the `Nano_33_BLE_IMU_Peripheral_Node.ino` file in the Arduino IDE and ensure that the `BLE.setLocalName("IMUPeripheral1");` is set to 1 and upload to your first Arduino Nano 33 BLE. This step should be repeated with the modification, `BLE.setLocalName("IMUPeripheral2");` and `BLE.setLocalName("IMUPeripheral3");` for each respective Arduino Nano 33 BLE being used. Unplug them and leave them powered off after programs are uploaded.
 3. Once all programs are uploaded to the boards you will open two terminal windows on your computer running Ubuntu
 4. In one terminal window run the following line `docker run -it ros:iron`.
+5. In the other run the micro-ROS agent using this docker command:
+
+```
+docker run -it --rm -v /dev:/dev --privileged --net=host microros/micro-ros-agent:iron serial --dev /dev/ttyACM0 -v6
+```
+
+6. Plug in all 3 Arduino Nano 33 BLE (peripheral devices) to USB ports or provide them power in whatever way you see fit subsequently plug in the Arduino Nano RP2040 Connect (central device) and wait for large amounts of scrolling change to appear as a connection is established between all peripherals and the central and messages are being published.
+7. After you see that all are connected, return to your ROS2 terminal window. Run the comand `ros2 topic list`. Here you should see 14 topics. It should look like this:
