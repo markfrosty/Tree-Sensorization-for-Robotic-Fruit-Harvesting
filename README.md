@@ -85,6 +85,7 @@ After making this change rebuilding of the library must occur and can be achieve
 2. Open a terminal window.
 3. Navigate to the micro-ROS Arduino Library folder. My path looked like this: `cd Documents/Arduino/libraries/micro_ros_arduino`
 4. Once in the micro-ROS Arduino Library and having made the changes to your `colcon_verylowmem.meta` file run the following commands:
-⋅⋅1.`docker pull microros/micro_ros_static_library_builder:iron`
-   2.`docker run -it --rm -v $(pwd):/project --env MICROROS_LIBRARY_FOLDER=extras microros/micro_ros_static_library_builder:iron`
+
+    1.`docker pull microros/micro_ros_static_library_builder:iron`
+    2.`docker run -it --rm -v $(pwd):/project --env MICROROS_LIBRARY_FOLDER=extras microros/micro_ros_static_library_builder:iron`
 5. This will take a while 
