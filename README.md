@@ -199,5 +199,18 @@ docker run -it --rm -v /dev:/dev --privileged --net=host microros/micro-ros-agen
 /rosout
 ```
 
+8. You should now be able to view any of the data being published from those topics by using `ros2 topic echo` and then the respective topic. For example if I wanted accelerometer data from Board 2 I would use `ros2 topic echo /accel1_data_topic` and I should start seeing the data from that board.
 
 
+## Known Issues
+There will be issues and this repo will be updated as progress is made and things are ironed out.
+
+One known issue is sometimes the connection is dropped on a board especially if powered by something like a USB battery bank. Most of the time waiting and ensuring power is being given to the boards will work otherwise hitting the central board reset button first followed by the peripheral reset buttons usually fixes things.
+
+When first plugging in boards sometimes connection doesn't happen and this can be solved by hitting the central board reset button first followed by the peripheral reset buttons. This works 99% of the time in my experience. 
+
+Please post any issues relating to my script and not the libraries used to the issues section and I will be sure to try and fix them.
+
+
+## Thank You
+Thank you for using my project to help solve any multi-device Arduino BLE issues you have or micro-ROS sensor data collection issues as well. I know it isn't perfect but I was unable to find anything on the internet that combined BLE communication, Arduinos, and micro-ROS so I hope it helps someone that is attempting something similar.
