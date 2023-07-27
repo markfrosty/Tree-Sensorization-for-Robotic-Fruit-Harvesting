@@ -14,7 +14,9 @@ The associated nodes posted here are designed to assist those using BLE to focus
 
 ## Current-Status
 Nano_33_BLE_IMU_Peripheral_Node: Stable and Functioning
+
 RP2040_Central_BLE_Node: Stable and Functioning
+
 raw_imu_data_micro_ros_arduino: Stable and Fully Operational for up to 3 Peripheral Devices
 
 ## Setup
