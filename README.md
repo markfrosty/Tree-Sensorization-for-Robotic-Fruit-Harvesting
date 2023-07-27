@@ -3,8 +3,11 @@
 
 # Tree-Sensorization
 Advisor: Dr. Joe Davidson
+
 Mentor: Miranda Cravetz
+
 Intern and Developer: Mark Frost
+
 
 ROS2 and micro-ROS integration with BLE Transmission of IMU data from Arduino to measure vibratory responses and aid in picking for a robotic apple-picking platform at Oregon State University College of Engineering Intelligent Machines and Materials Lab.
 
