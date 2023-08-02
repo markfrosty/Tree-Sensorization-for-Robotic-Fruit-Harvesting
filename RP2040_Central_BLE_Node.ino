@@ -3,7 +3,7 @@
 //IMU Data Recieving Node
 //Inspired by https://github.com/little-scale/arduino-sketches/blob/master/BLE_IMU.ino
 //Derived from examples/ArduinoBLE/Central/LedControl
-//Version 3 July 27, 2023
+//Version 4 August 2, 2023
 //Central Device: Arduino Nano RP2040 Connect
 //Peripheral Device: Arduino Nano 33 BLE
 //This script only works for ONE peripheral. Can be used as a good testing and starting point
@@ -60,9 +60,10 @@ void loop() {
     Serial.print(peripheral.advertisedServiceUuid());
     Serial.println();
 
-    //If the name doesn't have "IMUPeripheralService" it is ignored
-    if (peripheral.localName().indexOf("IMUPeripheralService") < 0) {
-      Serial.println("No 'IMUPeripheralService' in name");
+    //If the name doesn't have "IMUPeripheral1" it is ignored
+    //Here you can change the peripheral number to match the peripheral you want to test
+    if (peripheral.localName().indexOf("IMUPeripheral1") < 0) {
+      Serial.println("No 'IMUPeripheral1' in name");
       return;
     }
     BLE.stopScan();
@@ -76,7 +77,7 @@ void loop() {
   }
 }
 
-void readPeripheral(BLEDevice peripheral) {
+void readPeripheral(BLEDevice& peripheral) {
   if (peripheral.connect()) {
     Serial.println("Connected to peripheral");
     connected = true;
