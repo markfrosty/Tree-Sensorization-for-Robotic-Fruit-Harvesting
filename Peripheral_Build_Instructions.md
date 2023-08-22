@@ -1,10 +1,7 @@
 # Sensor Array Assembly Instructions
 
 1. Assuming all parts are present and/or printed, gather the following:
-  - Branch mount housings(3x) 
-  - Battery cover Arduino mounts(3x)
-  - RP2040 base plate(1x)
-  - M2 x 4 mm heatset inserts (19x)
+
   | Item  | Quanity | Note | 
   | ------------- | ------------- | ------------- |
   | Branch mount housing  | 3  |  |
