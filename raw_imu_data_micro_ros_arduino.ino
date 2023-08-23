@@ -2,7 +2,7 @@
 //Part of The Tree Sensorization Data Collection Suite
 //Arduino IMU Data Over BLE Subscription Node With micro-ROS Publisher
 //Inspired and Derived from micro-ROS Arduino examples and https://github.com/arduino-libraries/ArduinoBLE/issues/185
-//Version 3 July 27, 2023
+//Version 4 August 22, 2023
 //Central Device: Arduino Nano RP2040 Connect
 //Peripheral Device(s): Arduino Nano 33 BLE
 //Set Up For 3 Peripherals
@@ -106,73 +106,73 @@ void setup() {
     &accel_publisher[0],
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
-    "accel0_data_topic"));
+    "accel0"));
 
   RCCHECK(rclc_publisher_init_best_effort(
     &accel_publisher[1],
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
-    "accel1_data_topic"));
+    "accel1"));
 
   RCCHECK(rclc_publisher_init_best_effort(
     &accel_publisher[2],
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
-    "accel2_data_topic"));
+    "accel2"));
 
   RCCHECK(rclc_publisher_init_best_effort(
     &gyro_publisher[0],
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
-    "gyro0_data_topic"));
+    "gyro0"));
 
   RCCHECK(rclc_publisher_init_best_effort(
     &gyro_publisher[1],
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
-    "gyro1_data_topic"));
+    "gyro1"));
 
   RCCHECK(rclc_publisher_init_best_effort(
     &gyro_publisher[2],
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
-    "gyro2_data_topic"));
+    "gyro2"));
 
   RCCHECK(rclc_publisher_init_best_effort(
     &mag_publisher[0],
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
-    "mag0_data_topic"));
+    "mag0"));
 
   RCCHECK(rclc_publisher_init_best_effort(
     &mag_publisher[1],
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
-    "mag1_data_topic"));
+    "mag1"));
 
   RCCHECK(rclc_publisher_init_best_effort(
     &mag_publisher[2],
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
-    "mag2_data_topic"));
+    "mag2"));
 
   RCCHECK(rclc_publisher_init_best_effort(
     &orient_publisher[0],
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
-    "orient0_data_topic"));
+    "orient0"));
 
   RCCHECK(rclc_publisher_init_best_effort(
     &orient_publisher[1],
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
-    "orient1_data_topic"));
+    "orient1"));
 
   RCCHECK(rclc_publisher_init_best_effort(
     &orient_publisher[2],
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
-    "orient2_data_topic"));
+    "orient2"));
 }
 
 void loop() {
