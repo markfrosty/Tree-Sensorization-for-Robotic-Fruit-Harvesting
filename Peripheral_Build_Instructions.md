@@ -3,7 +3,7 @@
 1. Assuming all parts are present and/or printed, gather the following:
 
   | Item  | Quanity | Note | 
-  | ------------- | ------------- | ------------- |q
+  | ------------- | ------------- | ------------- |
   | Branch mount housing | 3 | Foundation for peripheral sensors |
   | Battery cover Arduino mount | 3 | Covers power system components and allows Arduino to mount |
   | RP2040 base plate | 1 | Provides protection for central device |
