@@ -188,23 +188,23 @@ docker run -it --rm -v /dev:/dev --privileged --net=host microros/micro-ros-agen
 7. After you see that all are connected, return to your ROS2 terminal window. Run the comand `ros2 topic list`. Here you should see 14 topics. It should look like this:
 
 ```
-/accel0_data_topic
-/accel1_data_topic
-/accel2_data_topic
-/gyro0_data_topic
-/gyro1_data_topic
-/gyro2_data_topic
-/mag0_data_topic
-/mag1_data_topic
-/mag2_data_topic
-/orient0_data_topic
-/orient1_data_topic
-/orient2_data_topic
+/accel0
+/accel1
+/accel2
+/gyro0
+/gyro1
+/gyro2
+/mag0
+/mag1
+/mag2
+/orient0
+/orient1
+/orient2
 /parameter_events
 /rosout
 ```
 
-8. You should now be able to view any of the data being published from those topics by using `ros2 topic echo` and then the respective topic. For example if I wanted accelerometer data from Board 2 I would use `ros2 topic echo /accel1_data_topic` and I should start seeing the data from that board.
+8. You should now be able to view any of the data being published from those topics by using `ros2 topic echo` and then the respective topic. For example if I wanted accelerometer data from Board 2 I would use `ros2 topic echo /accel1` and I should start seeing the data from that board.
 
 
 ## Known Issues
