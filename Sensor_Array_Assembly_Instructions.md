@@ -1,4 +1,8 @@
 # Sensor Array Assembly Instructions
+## Software
+
+Follow the [How To Use](https://github.com/markfrosty/Tree-Sensorization#how-to-use) section in the main [README](https://github.com/markfrosty/Tree-Sensorization) in order to properly upload the programs to the sensor array.
+
 ## 3D Printing 
 
 All 3D-printed components were printed with PLA on a Prusa MK3. 30% infill, 0.10 mm DETAIL setting, and supports everywhere were used to achieve high-quality parts.
