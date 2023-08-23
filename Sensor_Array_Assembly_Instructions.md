@@ -37,5 +37,5 @@ The parts to be printed are as follows:
   - REPEAT 3X FOR ALL BRANCH MOUNT BASES
 5. Place a small drop of solder betwwen the VUSB pads on the bottom of the Arduino Nano 33 BLE's. 
 ![Untitled drawing (2)](https://github.com/markfrosty/Tree-Sensorization/assets/124550575/455c9c20-9969-40a6-8b64-cd466689e224)
-6. Screw Arduino Nano 33 BLE peripherals into Arduino mount battery covers, tighten in criss-cross pattern
+6. Screw Arduino Nano 33 BLE peripherals into Arduino mount battery covers, tighten them in a criss-cross pattern, ensure the Arduino Nano 33 BLE has the U-blox logo aligned with the opening on the Arduino mount battery cover
 
