@@ -32,6 +32,6 @@ The parts to be printed are as follows:
 4. Affix heat set insert jig to a branch mount base using double-sided tape or a clamp, if using double sided tape ensure it will not be burned when installing inserts, place 4x M2 x 0.4 mm thread, 4 mm length heat-set inserts in each corner hole of the jig, install inserts, remove jig if still affixed, ensure inserts are flush, place 1x M2 x 0.4 mm thread, 4 mm length heat set insert in the hole located in the battery compartment, hold the insert straight and in the right location with metal tweezers and install, ensure flush
   - REPEAT 3X FOR ALL BRANCH MOUNT BASES
 5. Place a small drop of solder betwwen the VUSB pads on the bottom of the Arduino Nano 33 BLE's. 
-![Untitled drawing (2)](https://github.com/markfrosty/Tree-Sensorization/assets/124550575/7624766f-17d6-443f-958f-a6a27c505f3b)
+![Untitled drawing (2)](https://github.com/markfrosty/Tree-Sensorization/assets/124550575/455c9c20-9969-40a6-8b64-cd466689e224)
 6. Screw Arduino Nano 33 BLE peripherals into Arduino mount battery covers, tighten in criss-cross pattern
 
