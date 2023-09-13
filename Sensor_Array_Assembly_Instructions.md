@@ -8,7 +8,7 @@ Follow the [How To Use](https://github.com/markfrosty/Tree-Sensorization#how-to-
 All 3D-printed components were printed with PLA on a Prusa MK3. 30% infill, 0.10 mm DETAIL setting, and supports everywhere were used to achieve high-quality parts.
 The parts to be printed are as follows:
 
-  | Item  | Quanity | Note | 
+  | Item  | Quantity | Note | 
   | ------------- | ------------- | ------------- |
   | branch_mount_base | 3 | Houses all components and affixes to branch |
   | Arduino_mount_battery_cover | 3 | Covers power system components and allows Arduino to mount |
@@ -29,16 +29,16 @@ The parts to be printed are as follows:
   | Arduino_cover | 4 | Provides protection for central and peripheral sensors |
   | central_base_plate | 1 | Central device mount point |
   | M2 x 0.4 mm thread, 4 mm length heat set insert | 19 | Each branch mount base requires 5 and the central base plate requires 4 | 
-  | M1.4 x 0.3 mm thread, 3 mm length heat set insert | 16 | Arduino screws |
+  | M1.4 x 0.3 mm thread, 3 mm length heat set insert | 16 | Each Arduino mount battery cover and the central base plate requires 4, allows for Arduino to be affixed |
   | M2 x 0.4 mm thread, 6 mm length screw | 7 | The central base plate requires 4 and the branch mount base plate requires 1 each to affix the battery backpack | 
   | M2 x 0.4 mm thread, 12 mm length screw | 12 | Each branch mount base requires 4 to affix the Arduino cover | 
-  | M1.4 x 0.3 mm thread, 3 mm length screw | 16 | Each Arduino mount battery cover requires 4 and the central base plate requires 4| 
+  | M1.4 x 0.3 mm thread, 3 mm length screw | 16 | Each Arduino mount battery cover and the central base plate requires 4, Arduino screws | 
   | Laser cut heat set insert jig | 1 | Allows precise placement of inserts, CUT OUT OF WOOD |
   | Multi-bit screwdriver | N/A | 1.3 mm and 1.5 mm hex bits are needed for the installation of screws |
   | Double sided tape | 1 | Secures jig |
   | Metal tweezers | 1 | Helpful for installing heat set inserts | 
   | 22 AWG Solid Core wire | N/A | 4 colors are needed, kit in BOM should cover this |
-  | Wire stripper/cutter | N/A | I used an auto wire stripper and pliers to cut the wire but any wire stripper with cutter can be used |
+  | Wire stripper/cutter | N/A | I used an auto wire stripper and pliers to cut the wire but any wire stripper with a cutter can be used |
   | 3-Pin Slide Switch | 3 | On/Off switch for peripherals | 
   | Super glue | 1 | Used to affix switch and foam |
   | 1/4" tick neoprene foam sheet | 1 | Padding for branch mount plate |
@@ -72,7 +72,7 @@ The parts to be printed are as follows:
     - I found letting the glue dry with the base nearly vertical was helpful for reducing the glue that could potentially seep into the switch.
 ![IMG_4502](https://github.com/markfrosty/Tree-Sensorization/assets/124550575/e46fec22-fe01-4b23-86b8-d232c6ff184e)
 15. Plug the battery into the backpack and place it inside the battery compartment, train wires in order to allow for closing as necessary, push Arduino mount battery cover down and align edges with branch mount base, align Arduino cover with reset switch and USB port, using 4x M2 x 0.4 mm thread, 12 mm long screws, thread screws through Arduino cover and Arduino mount battery cover and into heat-set inserts in branch mount base, shift 3D printed parts as needed to make edges flush with one another, tighten using a criss-cross pattern
-    - In the end it should look like this:
+    - In the end, it should look like this:
 ![peripheral anatomy (1)](https://github.com/markfrosty/Tree-Sensorization-for-Robotic-Fruit-Harvesting/assets/124550575/afa91be9-0367-4133-a311-a57ab62ee97b)
 16. Depending on resources either waterjet neoprene foam using the flat pattern provided or laser cut a template from acrylic using the same flat pattern and trace the template on the foam using a razor blade, peel the backing, apply to curved branch contact point on the bottom of the branch mount base
 17. Thread velcro through the middle hole on the branch mount base
