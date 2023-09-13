@@ -5,7 +5,7 @@
 
 ## Mentor: Miranda Cravetz
 
-## Intern, Engineer, and Developer: Mark Frost
+## Intern: Mark Frost
 
 # Tree-Sensorization
 
