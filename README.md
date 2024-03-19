@@ -123,7 +123,13 @@ udevadm trigger
 udevadm control --reload-rules
 ```
 
+If it looks like this, great. Otherwise try the steps that assume you don't have this file or try copying and pasting into your `post_install.sh` file but the afformentioned is probbaly safer.
+Next we need to run that post install script now that we have confirmed it looks correct:
+```
+sudo .arduino15/packages/arduino/hardware/mbed_nano/4.1.1/post_install.sh
+```
 
+At this point your uploading issues should be solved.
 
 #### Required Libraries
 In order for these boards to function as intended the following libraries are required:
