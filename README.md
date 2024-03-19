@@ -47,9 +47,9 @@ git clone -b testing --single-branch https://github.com/markfrosty/Tree-Sensoriz
 ```
 4. We will now move the file for the Arduino out of the `tree_sensor` folder and into our Arduino library in our home directory:
 ```
-mv /home/YOUR-MACHINE-OR-USERNAME-NAME-HERE/microros_ws/src/tree_sensor/new_micro_ros_test_pub.ino /YOUR-MACHINE-OR-USERNAME-NAME-HERE/Arduino
+mv /home/YOUR-MACHINE-OR-USERNAME-NAME-HERE/microros_ws/src/tree_sensor/new_micro_ros_test_pub.ino /home/YOUR-MACHINE-OR-USERNAME-NAME-HERE/Arduino
 ```
-5. Build the packages you just cloned in the root directory:
+5. Build the packages you just cloned in the root directory (`/home/YOUR-MACHINE-OR-USERNAME-NAME-HERE/microros_ws`):
 ```
 cd ..
 cd ..
@@ -66,6 +66,64 @@ Now that you have all the necessary packages built, it is time to move onto the 
 Follow the most up-to-date instructions for the installation on your OS of choice.
 
 Download Link: https://www.arduino.cc/en/software
+
+I had an issue uploading sketches to my board. Turns out I was missing a post install script. I found a [forum post](https://forum.arduino.cc/t/unable-to-upload-sketch-to-arduino-nano-rp2040-connect/1004331/5) and the [fixing udev rules tutorial](https://support.arduino.cc/hc/en-us/articles/9005041052444-Fix-udev-rules-on-Linux) on the Arduino website very helpful. This is how I solved it:
+```
+cd .arduino15/packages/arduino/hardware/mbed_nano/
+ls
+```
+Check and see what your version number is here. In my case it was 4.1.1 so that is what I will use in this example.
+```
+cd 4.1.1
+ls
+```
+Here we are just checking to see if we have the `post_install.sh` file before we open it. If you dont have it follow the instructions on the [guide](https://support.arduino.cc/hc/en-us/articles/9005041052444-Fix-udev-rules-on-Linux) from Arduino mentioned previously and [download the post install script](https://github.com/arduino/ArduinoCore-mbed/blob/main/post_install.sh). Instructions repeated here:
+1. [Download the post install script](https://github.com/arduino/ArduinoCore-mbed/blob/main/post_install.sh)
+2. Go to your Downloads folder from the terminal:
+```
+cd Downloads
+```
+3. Execute the post install script from the Downloads folder (it MUST be run with sudo):
+```
+sudo ./post_install.sh
+```
+
+That should fix all your problems. 
+
+If you do have it, make sure it looks like this by opening the file (I use VSCode):
+```
+code .arduino15/packages/arduino/hardware/mbed_nano/4.1.1/post_install.sh
+```
+
+```
+#!/usr/bin/env bash
+
+arduino_mbed_rules () {
+    echo ""
+    echo "# Arduino Mbed bootloader mode udev rules"
+    echo ""
+cat <<EOF
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="2e8a", MODE:="0666"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="2341", MODE:="0666"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1fc9", MODE:="0666"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0525", MODE:="0666"
+EOF
+}
+
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root"
+  exit
+fi
+
+arduino_mbed_rules > /etc/udev/rules.d/60-arduino-mbed.rules
+
+# reload udev rules
+echo "Reload rules..."
+udevadm trigger
+udevadm control --reload-rules
+```
+
+
 
 #### Required Libraries
 In order for these boards to function as intended the following libraries are required:
@@ -132,10 +190,9 @@ After making these changes rebuilding of the library must occur and can be achie
 
     1.`docker pull microros/micro_ros_static_library_builder:humble`
    
-    2.```
-        docker run -it --rm -v $(pwd):/project --env MICROROS_LIBRARY_FOLDER=extras microros/micro_ros_static_library_builder:iron -p cortex_m0
-        ```
-6. This will take a few minutes to complete before you can recompile and upload to the boards with this change implemented.
+    2.`docker run -it --rm -v $(pwd):/project --env MICROROS_LIBRARY_FOLDER=extras microros/micro_ros_static_library_builder:iron -p cortex_m0
+   
+5. This will take a few minutes to complete before you can recompile and upload to the boards with this change implemented.
 
 ## How To Use Locally
 In order to use these scripts and 3 peripherals in a micro-ROS/ROS 2 environment follow the steps listed below:
