@@ -2,14 +2,20 @@
 
 # Tree-Sensorization: testing branch
 
-This branch and it's contents set out to achieve the goal of further simplifying and improving the over all Tree-Sensorization project. This branch currently includes support for adding a custom message in order to simplify and improve transmission of data.
+This branch and it's contents set out to achieve the goal of further simplifying and improving the over all Tree-Sensorization project. This branch currently includes support for adding a custom message in order to simplify and improve transmission of data. Further simplification of data transmission is targeted to improve speed, timing, and enable easier visualization of data in apps such as RViz and Plot Juggler.
+
+#### DISCLAIMER: This development was part of a project for the ROB599 class at Oregon State University.
 
 ## Current-Status
 ### Main Branch
 
 All aspects are to be treated as unstable.
 
-There are many current issues.
+There are many issues.
+
+Messages: 
+1. There has been an issue where the subscriber will recieve data and the topics will show up when `ros2 topic list` is used but `ros2 topic echo /imu0` for example results in an error message: `The message type 'tree_sensorization_messages/msg/TreeSensor' is invalid`. I don't really understand where this is coming from as I do recieve the expected data in the subscriber.
+2. The messages coming into the subscriber are extremely slow and lag inconsistently. When I used to have 12 topics and would echo them, there was a firehose of messages. Now this subscriber doesn't perform the same way. Clearly there is significant room for improvement.
 
 ## Setup
 A computer running Ubuntu 22.04 and a MacBook Pro running macOS Ventura 13.4 were used for development. The only requirements for this are a computer running Ubuntu and installations of the Arduino IDE (with required libraries) and Docker. 
