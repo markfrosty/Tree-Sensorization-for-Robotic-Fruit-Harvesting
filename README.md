@@ -34,7 +34,7 @@ Having followed the main branch [README](https://github.com/markfrosty/Tree-Sens
 
 1. Navigate to your `microros_ws` and `src` folder from your home directory:
 ```
-cd microros_ws/src
+cd ~/microros_ws/src
 ```
 2. Create a new folder that you will then clone this branch into (I use my folder `tree_sensor` for this example but you can name it whatever):
 ```
@@ -47,7 +47,7 @@ git clone -b testing --single-branch https://github.com/markfrosty/Tree-Sensoriz
 ```
 4. We will now move the file for the Arduino out of the `tree_sensor` folder and into our Arduino library in our home directory:
 ```
-mv /home/YOUR-MACHINE-OR-USERNAME-NAME-HERE/microros_ws/src/tree_sensor/new_micro_ros_test_pub.ino /home/YOUR-MACHINE-OR-USERNAME-NAME-HERE/Arduino
+mv ~/microros_ws/src/tree_sensor/new_micro_ros_test_pub.ino ~/Arduino
 ```
 5. Build the packages you just cloned in the root directory (`/home/YOUR-MACHINE-OR-USERNAME-NAME-HERE/microros_ws`):
 ```
@@ -69,7 +69,7 @@ Download Link: https://www.arduino.cc/en/software
 
 I had an issue uploading sketches to my board. Turns out I was missing a post install script. I found a [forum post](https://forum.arduino.cc/t/unable-to-upload-sketch-to-arduino-nano-rp2040-connect/1004331/5) and the [fixing udev rules tutorial](https://support.arduino.cc/hc/en-us/articles/9005041052444-Fix-udev-rules-on-Linux) on the Arduino website very helpful. This is how I solved it:
 ```
-cd .arduino15/packages/arduino/hardware/mbed_nano/
+cd ~/.arduino15/packages/arduino/hardware/mbed_nano/
 ls
 ```
 Check and see what your version number is here. In my case it was 4.1.1 so that is what I will use in this example.
@@ -81,7 +81,7 @@ Here we are just checking to see if we have the `post_install.sh` file before we
 1. [Download the post install script](https://github.com/arduino/ArduinoCore-mbed/blob/main/post_install.sh)
 2. Go to your Downloads folder from the terminal:
 ```
-cd Downloads
+cd ~/Downloads
 ```
 3. Execute the post install script from the Downloads folder (it MUST be run with sudo):
 ```
@@ -92,7 +92,7 @@ That should fix all your problems.
 
 If you do have it, make sure it looks like this by opening the file (I use VSCode):
 ```
-code .arduino15/packages/arduino/hardware/mbed_nano/4.1.1/post_install.sh
+code ~/.arduino15/packages/arduino/hardware/mbed_nano/4.1.1/post_install.sh
 ```
 
 ```
@@ -126,7 +126,7 @@ udevadm control --reload-rules
 If it looks like this, great. Otherwise try the steps that assume you don't have this file or try copying and pasting into your `post_install.sh` file but the afformentioned is probbaly safer.
 Next we need to run that post install script now that we have confirmed it looks correct:
 ```
-sudo .arduino15/packages/arduino/hardware/mbed_nano/4.1.1/post_install.sh
+sudo ~/.arduino15/packages/arduino/hardware/mbed_nano/4.1.1/post_install.sh
 ```
 
 At this point your uploading issues should be solved.
@@ -185,58 +185,46 @@ After modification, my `colcon_verylowmem.meta` file looks like this:
 
 #### Adding Custom Messages to Arduino:
 
+This is where things get a little bit interesting. I had some of my biggest issues here with building the library for a number of reasons but it is relatively straight forward.
 
-
-After making these changes rebuilding of the library must occur and can be achieved by doing the following:
-
-1. If using Windows or macOS launch Docker engine. On Ubuntu you will not have to perform this step.
-2. Open a terminal window.
-3. Navigate to the micro-ROS Arduino Library folder. My path looked like this: `cd Documents/Arduino/libraries/micro_ros_arduino`
-4. Once in the micro-ROS Arduino Library and having made the changes to your `colcon_verylowmem.meta` file run the following commands:
-
-    1.`docker pull microros/micro_ros_static_library_builder:humble`
-   
-    2.`docker run -it --rm -v $(pwd):/project --env MICROROS_LIBRARY_FOLDER=extras microros/micro_ros_static_library_builder:humble -p cortex_m0
-   
-5. This will take a few minutes to complete before you can recompile and upload to the boards with this change implemented.
+Integrating the custom ROS messsage into your Arduino Library:
+1. Now that you have the message package built in your micro-ROS workspace, it will need to be copied into the micro-ROS Arduino library. This needs to go into the `~/Arduino/libraries/micro_ros_arduino/extras/library_generation/extra_packages` folder:
+```
+cp ~/microros_ws/src/tree_sensor/tree_sensorization_message ~/Arduino/libraries/micro_ros_arduino/extras/library_generation/extra_packages
+```
+2. Navigate to the `micro_ros_arduino` library:
+```
+cd ~/Arduino/libraries/micro_ros_arduino/
+```
+3. Now this is the important part that will tie everything together. Building the library:
+```
+docker run -it --rm -v $(pwd):/project --env MICROROS_LIBRARY_FOLDER=extras microros/micro_ros_static_library_builder:humble -p cortex_m0
+```
+4. This will take a few minutes to complete before you can recompile and upload to the boards with these changes implemented.
+5. In a perfect world, the library will just rebuild and work great. Pay close attention to the warnings and error messages if you are seeing any. I had to rebuild many times when I did this the first time.
 
 ## How To Use Locally
 In order to use these scripts and 3 peripherals in a micro-ROS/ROS 2 environment follow the steps listed below:
 
-1. Upload the `raw_imu_data_micro_ros_arduino.ino` file from the Arduino IDE to the Arduino Nano RP2040 Connect and unplug it when the upload has finished.
-2. Open the `Nano_33_BLE_IMU_Peripheral_Node.ino` file in the Arduino IDE and ensure that the `BLE.setLocalName("IMUPeripheral1");` is set to 1 and upload to your first Arduino Nano 33 BLE. This step should be repeated with the modification, `BLE.setLocalName("IMUPeripheral2");` and `BLE.setLocalName("IMUPeripheral3");` for each respective Arduino Nano 33 BLE being used. Unplug them and leave them powered off after programs are uploaded.
-3. Once all programs are uploaded to the boards you will open two terminal windows on your computer running Ubuntu
-4. In one terminal run the micro-ROS agent with these following lines:
+1. Upload the `new_micro_ros_test_pub.ino` file from the Arduino IDE to the Arduino Nano RP2040 Connect and unplug it when the upload has finished.
+2. In the terminal, source your setup file from your micro-ROS workspace and run the launch file that handles starting the micro-ROS agent and the subscriber:
+```
+cd ~/microros_ws
+source install/setup.bash
+ros2 launch tree_sensorization tree_sensorization_launch.py
+```
+3. Plug in all 3 Arduino Nano 33 BLE (peripheral devices) to USB ports or provide them power in whatever way you see fit (if building my sensor array turn peripherals on). Subsequently, plug in the Arduino Nano RP2040 Connect (central device) and wait for large amounts of scrolling change to appear as a connection is established between all peripherals and the central and messages are being published. I have found that connection occurs quicker if the peripherals are powered first before the central is plugged in.
+4. After you see that all are connected, return to your ROS 2 terminal window not running the micro-ROS Agent. Run the comand `ros2 topic list`. Here you should see 5 topics. It should look like this:
 
 ```
-source /opt/ros/iron/setup.bash
-cd microros_ws
-source install/local_setup.bash
-ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyACM0
-```
-
-5. In the other terminal window run the following: `source /opt/ros/iron/setup.bash`.
-6. Plug in all 3 Arduino Nano 33 BLE (peripheral devices) to USB ports or provide them power in whatever way you see fit (if building my sensor array turn peripherals on). Subsequently, plug in the Arduino Nano RP2040 Connect (central device) and wait for large amounts of scrolling change to appear as a connection is established between all peripherals and the central and messages are being published. I have found that connection occurs quicker if the peripherals are powered first before the central is plugged in.
-7. After you see that all are connected, return to your ROS 2 terminal window not running the micro-ROS Agent. Run the comand `ros2 topic list`. Here you should see 14 topics. It should look like this:
-
-```
-/accel0
-/accel1
-/accel2
-/gyro0
-/gyro1
-/gyro2
-/mag0
-/mag1
-/mag2
-/orient0
-/orient1
-/orient2
+/imu0
+/imu1
+/imu2
 /parameter_events
 /rosout
 ```
 
-8. You should now be able to view any of the data being published from those topics by using `ros2 topic echo` and then the respective topic. For example, if I wanted accelerometer data from Board 2 I would use `ros2 topic echo /accel1` and I should start seeing the data from that board.
+8. You should now be able to view any of the data being published from those topics by using `ros2 topic echo` and then the respective topic. For example, if I wanted accelerometer data from Board 2 I would use `ros2 topic echo /accel1` and I should start seeing the data from that board. AS OF 3/18/24 THIS DOES NOT WORK. A FIX IS IN PROGRESS
 9. You can also bag record data using `ros2 bag record --storage sqlite3 -a -o INSERT YOUR DESIRED FILE NAME HERE`.
 
 
@@ -246,6 +234,10 @@ There will be issues and this repo will be updated as progress is made and thing
 One known issue is sometimes the connection is dropped on a board especially if powered by something like a USB battery bank. Most of the time waiting and ensuring power is being given to the boards will work otherwise hitting the central board reset button first followed by the peripheral reset buttons usually fixes things.
 
 When first plugging in boards sometimes connection doesn't happen and this can be solved by hitting the central board reset button first followed by the peripheral reset buttons. This works 99% of the time in my experience. 
+
+The messages do not echo in the command line.
+
+The subscriber is very slow.
 
 Please post any issues relating to my script and not the libraries used to the issues section and I will be sure to try and fix them.
 
