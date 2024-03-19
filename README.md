@@ -37,7 +37,7 @@ cd tree_sensor
 ```
 3. Clone this branch into the folder you created and navigated into:
 ```
-git clone https://github.com/markfrosty/Tree-Sensorization-for-Robotic-Fruit-Harvesting.git
+git clone -b testing --single-branch https://github.com/markfrosty/Tree-Sensorization-for-Robotic-Fruit-Harvesting.git
 ```
 4. Build the packages you just cloned in the root directory:
 ```
@@ -45,7 +45,10 @@ cd ..
 cd ..
 colcon build
 ```
-5. next
+5. At this point, the message should be usable along with the launch file and subscriber. The steps below will need to be taken on the Arduino side before it functions fully but it is recomended that you run the launch file to ensure all the packages build correctly.
+```
+ros2 launch tree_sensorization tree_sensorization_launch.py
+```
 
 ### Arduino IDE
 Follow the most up-to-date instructions for the installation on your OS of choice.
