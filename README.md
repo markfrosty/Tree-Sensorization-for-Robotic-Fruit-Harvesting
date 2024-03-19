@@ -109,7 +109,7 @@ The micro-ROS Agent can be installed with the following steps:
 1. Source your most recent ROS 2 installation.
 
 ```
-source /opt/ros/iron/setup.bash
+source /opt/ros/humble/setup.bash
 ```
 
 2. Create a workspace and download the micro-ROS tools.
@@ -164,8 +164,8 @@ ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyACM0
 ### Installing ROS 2 in Docker
 This should realistically be performed on your machine running Ubuntu as you will not be able to access the serial ports on anything but a Linux machine as previously discussed.
 
-1. Open a terminal window and run `docker pull ros:iron`
-2. After it completes the pull and creates the image run `docker run -it ros:iron` and ensure it is in the ros2 environment.
+1. Open a terminal window and run `docker pull ros:humble`
+2. After it completes the pull and creates the image run `docker run -it ros:humble` and ensure it is in the ros2 environment.
 3. Run the line `ros2 topic list` and you should see two topics: `/parameter_events` and `/rosout`
 
 ### Arduino IDE
@@ -230,9 +230,9 @@ After making this change rebuilding of the library must occur and can be achieve
 3. Navigate to the micro-ROS Arduino Library folder. My path looked like this: `cd Documents/Arduino/libraries/micro_ros_arduino`
 4. Once in the micro-ROS Arduino Library and having made the changes to your `colcon_verylowmem.meta` file run the following commands:
 
-    1.`docker pull microros/micro_ros_static_library_builder:iron`
+    1.`docker pull microros/micro_ros_static_library_builder:humble`
    
-    2.`docker run -it --rm -v $(pwd):/project --env MICROROS_LIBRARY_FOLDER=extras microros/micro_ros_static_library_builder:iron`
+    2.`docker run -it --rm -v $(pwd):/project --env MICROROS_LIBRARY_FOLDER=extras microros/micro_ros_static_library_builder:humble`
 5. This will take 10+ minutes to complete before you can recompile and upload to the boards with this change implemented.
 
 ## How To Use Locally
@@ -244,13 +244,13 @@ In order to use these scripts and 3 peripherals in a micro-ROS/ROS 2 environment
 4. In one terminal run the micro-ROS agent with these following lines:
 
 ```
-source /opt/ros/iron/setup.bash
+source /opt/ros/humble/setup.bash
 cd microros_ws
 source install/local_setup.bash
 ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyACM0
 ```
 
-5. In the other terminal window run the following: `source /opt/ros/iron/setup.bash`.
+5. In the other terminal window run the following: `source /opt/ros/humble/setup.bash`.
 6. Plug in all 3 Arduino Nano 33 BLE (peripheral devices) to USB ports or provide them power in whatever way you see fit (if building my sensor array turn peripherals on). Subsequently, plug in the Arduino Nano RP2040 Connect (central device) and wait for large amounts of scrolling change to appear as a connection is established between all peripherals and the central and messages are being published. I have found that connection occurs quicker if the peripherals are powered first before the central is plugged in.
 7. After you see that all are connected, return to your ROS 2 terminal window not running the micro-ROS Agent. Run the comand `ros2 topic list`. Here you should see 14 topics. It should look like this:
 
@@ -281,11 +281,11 @@ In order to use these scripts and 3 peripherals in a micro-ROS/ROS 2 environment
 1. Upload the `raw_imu_data_micro_ros_arduino.ino` file from the Arduino IDE to the Arduino Nano RP2040 Connect and unplug it when the upload has finished.
 2. Open the `Nano_33_BLE_IMU_Peripheral_Node.ino` file in the Arduino IDE and ensure that the `BLE.setLocalName("IMUPeripheral1");` is set to 1 and upload to your first Arduino Nano 33 BLE. This step should be repeated with the modification, `BLE.setLocalName("IMUPeripheral2");` and `BLE.setLocalName("IMUPeripheral3");` for each respective Arduino Nano 33 BLE being used. Unplug them and leave them powered off after programs are uploaded.
 3. Once all programs are uploaded to the boards you will open two terminal windows on your computer running Ubuntu
-4. In one terminal window run the following line `docker run -it ros:iron`.
+4. In one terminal window run the following line `docker run -it ros:humble`.
 5. In the other run the micro-ROS agent using this docker command:
 
 ```
-docker run -it --rm -v /dev:/dev --privileged --net=host microros/micro-ros-agent:iron serial --dev /dev/ttyACM0 -v6
+docker run -it --rm -v /dev:/dev --privileged --net=host microros/micro-ros-agent:humble serial --dev /dev/ttyACM0 -v6
 ```
 
 6. Plug in all 3 Arduino Nano 33 BLE (peripheral devices) to USB ports or provide them power in whatever way you see fit. Subsequently plug in the Arduino Nano RP2040 Connect (central device) and wait for large amounts of scrolling change to appear as a connection is established between all peripherals and the central and messages are being published. I have found that connection occurs quicker if the peripherals are powered first before the central is plugged in.
