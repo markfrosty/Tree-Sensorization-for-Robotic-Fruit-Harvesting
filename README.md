@@ -18,11 +18,17 @@ My goal is to improve picking models based on IMU data from an Arduino Nano 33 B
 The associated nodes posted here are designed to assist those using BLE to focus on data collection, publication, and ROS environment integration while cutting down on distracting features in most relevant examples.
 
 ## Current-Status
+### Main Branch
 Nano_33_BLE_IMU_Peripheral_Node: Stable and Functioning
 
 RP2040_Central_BLE_Node: Stable and Functioning
 
 raw_imu_data_micro_ros_arduino: Stable and Fully Operational for up to 3 Peripheral Devices
+
+### Testing Branch
+All aspects are to be treated as unstable.
+
+There are many current issues.
 
 ## Setup
 A computer running Ubuntu 22.04 and a MacBook Pro running macOS Ventura 13.4 were used for development. The only requirements for this are a computer running Ubuntu and installations of the Arduino IDE (with required libraries) and Docker. 
