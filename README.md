@@ -196,7 +196,7 @@ After making these changes rebuilding of the library must occur and can be achie
 
     1.`docker pull microros/micro_ros_static_library_builder:humble`
    
-    2.`docker run -it --rm -v $(pwd):/project --env MICROROS_LIBRARY_FOLDER=extras microros/micro_ros_static_library_builder:iron -p cortex_m0
+    2.`docker run -it --rm -v $(pwd):/project --env MICROROS_LIBRARY_FOLDER=extras microros/micro_ros_static_library_builder:humble -p cortex_m0
    
 5. This will take a few minutes to complete before you can recompile and upload to the boards with this change implemented.
 
