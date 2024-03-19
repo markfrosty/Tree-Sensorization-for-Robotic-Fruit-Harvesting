@@ -23,6 +23,12 @@ A computer running Ubuntu 22.04 and a MacBook Pro running macOS Ventura 13.4 wer
 IMPORTANT: Linux equipped computer is required to expose serial ports to the micro-ROS agent running in Docker.
 NOTE: The following information assumes you have gone through the required steps on the main branch [README](https://github.com/markfrosty/Tree-Sensorization-for-Robotic-Fruit-Harvesting/blob/main/README.md) before attempting these unstable implementations.
 
+Below are some resources that helped me solve many of the issues I had. I have done my best to write the instructions in this README to make it so you don't need to seek out aditional resources in order to make this work. However, I make mistakes and computers sometimes just aren't happy so I wanted to provide all the resources I found helpful. Please try and use my instructions first however as they should perform everything in the correct order. 
+
+(Extremely) Helpful resources:
+- [Creating a custom message on arduino nano RP2040 connect #872](https://github.com/micro-ROS/micro_ros_arduino/issues/872#issuecomment-1077427915)
+- [How to include a custom ROS message in micro-ROS](https://micro.ros.org/docs/tutorials/advanced/create_new_type/) (Take parts of this with a grain of salt. Read in conjunction with resource above)
+
 ### micro-ROS Workspace
 Having followed the main branch [README](https://github.com/markfrosty/Tree-Sensorization-for-Robotic-Fruit-Harvesting/blob/main/README.md), you should have a workspace and everything set up for micro-ROS. In order to use the launch file subscriber, and custom messages included in this branch, you will need to follow the instructions that follow for cloning this branch and building the workspace with the new packages. 
 
@@ -39,16 +45,22 @@ cd tree_sensor
 ```
 git clone -b testing --single-branch https://github.com/markfrosty/Tree-Sensorization-for-Robotic-Fruit-Harvesting.git
 ```
-4. Build the packages you just cloned in the root directory:
+4. We will now move the file for the Arduino out of the `tree_sensor` folder and into our Arduino library in our home directory:
+```
+mv /home/YOUR-MACHINE-OR-USERNAME-NAME-HERE/microros_ws/src/tree_sensor/new_micro_ros_test_pub.ino /YOUR-MACHINE-OR-USERNAME-NAME-HERE/Arduino
+```
+5. Build the packages you just cloned in the root directory:
 ```
 cd ..
 cd ..
 colcon build
 ```
-5. At this point, the message should be usable along with the launch file and subscriber. The steps below will need to be taken on the Arduino side before it functions fully but it is recomended that you run the launch file to ensure all the packages build correctly.
+6. At this point, the message should be usable along with the launch file and subscriber. The steps below will need to be taken on the Arduino side before it functions fully but it is recomended that you run the launch file to ensure all the packages build correctly.
 ```
 ros2 launch tree_sensorization tree_sensorization_launch.py
 ```
+
+Now that you have all the necessary packages built, it is time to move onto the Arduino set up which can have some issues in regards to building your packages and rebuilding the library. This process should hopefully be a bit more painless if you are following along here. 
 
 ### Arduino IDE
 Follow the most up-to-date instructions for the installation on your OS of choice.
@@ -120,8 +132,10 @@ After making these changes rebuilding of the library must occur and can be achie
 
     1.`docker pull microros/micro_ros_static_library_builder:humble`
    
-    2.`docker run -it --rm -v $(pwd):/project --env MICROROS_LIBRARY_FOLDER=extras microros/micro_ros_static_library_builder:humble -p cortex_m0`
-5. This will take a few minutes to complete before you can recompile and upload to the boards with this change implemented.
+    2.```
+        docker run -it --rm -v $(pwd):/project --env MICROROS_LIBRARY_FOLDER=extras microros/micro_ros_static_library_builder:iron -p cortex_m0
+        ```
+6. This will take a few minutes to complete before you can recompile and upload to the boards with this change implemented.
 
 ## How To Use Locally
 In order to use these scripts and 3 peripherals in a micro-ROS/ROS 2 environment follow the steps listed below:
