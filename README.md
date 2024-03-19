@@ -23,6 +23,30 @@ A computer running Ubuntu 22.04 and a MacBook Pro running macOS Ventura 13.4 wer
 IMPORTANT: Linux equipped computer is required to expose serial ports to the micro-ROS agent running in Docker.
 NOTE: The following information assumes you have gone through the required steps on the main branch [README](https://github.com/markfrosty/Tree-Sensorization-for-Robotic-Fruit-Harvesting/blob/main/README.md) before attempting these unstable implementations.
 
+### micro-ROS Workspace
+Having followed the main branch [README](https://github.com/markfrosty/Tree-Sensorization-for-Robotic-Fruit-Harvesting/blob/main/README.md), you should have a workspace and everything set up for micro-ROS. In order to use the launch file subscriber, and custom messages included in this branch, you will need to follow the instructions that follow for cloning this branch and building the workspace with the new packages. 
+
+1. Navigate to your `microros_ws` and `src` folder from your home directory:
+```
+cd microros_ws/src
+```
+2. Create a new folder that you will then clone this branch into (I use my folder `tree_sensor` for this example but you can name it whatever):
+```
+mkdir tree_sensor
+cd tree_sensor
+```
+3. Clone this branch into the folder you created and navigated into:
+```
+git clone https://github.com/markfrosty/Tree-Sensorization-for-Robotic-Fruit-Harvesting.git
+```
+4. Build the packages you just cloned in the root directory:
+```
+cd ..
+cd ..
+colcon build
+```
+5. next
+
 ### Arduino IDE
 Follow the most up-to-date instructions for the installation on your OS of choice.
 
@@ -40,9 +64,11 @@ MadgwickAHRS.h -> Install through the libraries tab in the Arduino IDE
 micro_ros_arduino.h -> Install by following precompiled library instructions on https://github.com/micro-ROS/micro_ros_arduino
 
 ### micro-ROS Arduino Library
-Due to default settings and limitations made out of the box, this library requires modification and re-building in order for full functionality to be achieved.
+Due to default settings and limitations made out of the box, this library requires modification and re-building in order for full functionality to be achieved. Especially in regards to publishing custom messages
 
-The Arduino Nano RP2040 Connect uses `colcon_verylowmem.meta` which limits publishers:
+#### Changing Memory Settings:
+
+The Arduino Nano RP2040 Connect uses `colcon_verylowmem.meta` which limits publishers and other memory constraints:
 
 
 ```
@@ -59,7 +85,7 @@ The Arduino Nano RP2040 Connect uses `colcon_verylowmem.meta` which limits publi
 }
 ```
 
-In this case, we need 12 publishers so this file must be modified to look more like the `colcon.meta` file but with even more publishers. In order to edit the `colcon_verylowmem.meta` file, navigate to where your micro-ROS Arduino library is stored (`micro_ros_arduino`) and go to `extras/library_generation/` directory. Here you will find the `colcon_verylowmem.meta` file and will be able to change the parameters.
+For the stable version in the main branch, we need 12 publishers so this file must be modified to look more like the `colcon.meta` file but with even more publishers. In order to edit the `colcon_verylowmem.meta` file, navigate to where your micro-ROS Arduino library is stored (`micro_ros_arduino`) and go to `extras/library_generation/` directory. Here you will find the `colcon_verylowmem.meta` file and will be able to change the parameters in the code editor of your choice. It is not necessary to have 12 publishers anymore as the point of this development is to slim that down significantly but I left it the same as I decided I might go back and forth on using the stable and unstable versions. The max history is an area that could change some aspects of this development and is being looked into. 
 After modification, my `colcon_verylowmem.meta` file looks like this:
 
 
@@ -78,17 +104,21 @@ After modification, my `colcon_verylowmem.meta` file looks like this:
     }
 ```
 
-After making this change rebuilding of the library must occur and can be achieved by doing the following:
+#### Adding Custom Messages to Arduino:
+
+
+
+After making these changes rebuilding of the library must occur and can be achieved by doing the following:
 
 1. If using Windows or macOS launch Docker engine. On Ubuntu you will not have to perform this step.
 2. Open a terminal window.
 3. Navigate to the micro-ROS Arduino Library folder. My path looked like this: `cd Documents/Arduino/libraries/micro_ros_arduino`
 4. Once in the micro-ROS Arduino Library and having made the changes to your `colcon_verylowmem.meta` file run the following commands:
 
-    1.`docker pull microros/micro_ros_static_library_builder:iron`
+    1.`docker pull microros/micro_ros_static_library_builder:humble`
    
-    2.`docker run -it --rm -v $(pwd):/project --env MICROROS_LIBRARY_FOLDER=extras microros/micro_ros_static_library_builder:iron`
-5. This will take 10+ minutes to complete before you can recompile and upload to the boards with this change implemented.
+    2.`docker run -it --rm -v $(pwd):/project --env MICROROS_LIBRARY_FOLDER=extras microros/micro_ros_static_library_builder:humble -p cortex_m0`
+5. This will take a few minutes to complete before you can recompile and upload to the boards with this change implemented.
 
 ## How To Use Locally
 In order to use these scripts and 3 peripherals in a micro-ROS/ROS 2 environment follow the steps listed below:
